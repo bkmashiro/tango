@@ -11,8 +11,14 @@ const route  = useRoute()
 
 const queue   = ref<VocabProgress[]>([])
 const current = ref(0)
-const phase   = ref<'question' | 'answer'>('question')
 const done    = ref(false)
+
+// Per-card phase: keyed by cardKey so the leaving card keeps its phase during slide animation
+const phaseMap = ref<Record<number, 'question' | 'answer'>>({})
+const phase = computed<'question' | 'answer'>({
+  get: () => phaseMap.value[cardKey.value] ?? 'question',
+  set: (v) => { phaseMap.value = { ...phaseMap.value, [cardKey.value]: v } },
+})
 const correct = ref(0)
 const deck    = ref<'all' | 'library' | 'favorites'>('all')
 
@@ -114,7 +120,7 @@ async function tryRestoreSession(): Promise<boolean> {
     queue.value   = restored
     current.value = Math.min(s.current, restored.length - 1)
     correct.value = s.correct
-    phase.value   = 'question'
+    phaseMap.value = {}
     done.value    = false
     history.value = []
     cardKey.value++
@@ -130,9 +136,9 @@ async function loadQueue(fresh = false) {
     const restored = await tryRestoreSession()
     if (restored) return
   }
+  phaseMap.value = {}
   queue.value   = await getDueVocab(getSetting('reviewLimit'), deck.value)
   current.value = 0
-  phase.value   = 'question'
   correct.value = 0
   done.value    = queue.value.length === 0
   history.value = []
@@ -184,6 +190,7 @@ async function respond(isCorrect: boolean) {
 
 function goForward() {
   transitionName.value = 'slide-left'
+  const leavingKey = cardKey.value
   cardKey.value++
   const next = current.value + 1
   if (next >= queue.value.length) {
@@ -191,7 +198,12 @@ function goForward() {
     clearSession()
   } else {
     current.value = next
-    phase.value   = 'question'
+    // Keep leavingKey entry so the slide-out card holds its answer phase;
+    // new cardKey is not in phaseMap → computed returns 'question' automatically.
+    // Trim anything older than leavingKey to avoid unbounded growth.
+    const trimmed: Record<number, 'question' | 'answer'> = {}
+    if (phaseMap.value[leavingKey] !== undefined) trimmed[leavingKey] = phaseMap.value[leavingKey]
+    phaseMap.value = trimmed
     saveSession()
   }
 }
