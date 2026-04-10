@@ -334,10 +334,8 @@ function handleKey(e: KeyboardEvent) {
         <div class="card-wrap">
           <Transition :name="transitionName">
             <div class="flash-card" :key="cardKey" :class="{ 'quick-peek': quickPeeked }">
-              <div class="card-word-row">
-                <div class="card-word">{{ vocabData?.word ?? normalizeWord(card.word) }}</div>
-                <button class="btn-speak" @click="speak" title="朗读">🔊</button>
-              </div>
+              <button class="btn-speak" @click.stop="speak" title="朗读">🔊</button>
+              <div class="card-word">{{ vocabData?.word ?? normalizeWord(card.word) }}</div>
               <div v-if="vocabData?.reading_display && (showReading || phase === 'answer')" class="card-reading">
                 {{ vocabData.reading_display }}
               </div>
@@ -608,6 +606,7 @@ function handleKey(e: KeyboardEvent) {
 
 /* Flash card */
 .flash-card {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
@@ -627,11 +626,6 @@ function handleKey(e: KeyboardEvent) {
   box-shadow: 0 4px 32px rgba(139,92,246,.3);
 }
 
-.card-word-row {
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
 .card-word {
   font-family: var(--font-jp);
   font-size: clamp(2rem, 10vw, 3.5rem);
@@ -643,19 +637,19 @@ function handleKey(e: KeyboardEvent) {
 }
 .btn-speak {
   position: absolute;
-  right: 0;
-  bottom: 0;
+  top: 12px;
+  right: 14px;
   background: none;
   border: none;
   font-size: 1rem;
   cursor: pointer;
-  opacity: 0.35;
+  opacity: 0.3;
   padding: 4px;
   border-radius: 6px;
   transition: opacity .15s;
   line-height: 1;
 }
-.btn-speak:hover { opacity: 0.9; }
+.btn-speak:hover { opacity: 0.85; }
 .card-reading {
   font-family: var(--font-jp);
   font-size: 1rem;
