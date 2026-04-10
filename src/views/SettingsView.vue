@@ -60,9 +60,19 @@ onMounted(loadDebug)
 
 // ── Actions ───────────────────────────────────────────────────────────────
 const confirmClear = ref<'all' | 'vocab' | 'sections' | null>(null)
+const confirmStep  = ref<1 | 2>(1)   // two-step confirmation
+
+function requestClear(type: 'all' | 'vocab' | 'sections') {
+  confirmClear.value = type
+  confirmStep.value  = 1
+}
+
+function confirmStep1() {
+  confirmStep.value = 2
+}
 
 async function doClear() {
-  if (!confirmClear.value) return
+  if (!confirmClear.value || confirmStep.value !== 2) return
   if (confirmClear.value === 'all') {
     await db.vocabProgress.clear()
     await db.sectionProgress.clear()
@@ -73,12 +83,29 @@ async function doClear() {
     await db.sectionProgress.clear()
   }
   confirmClear.value = null
+  confirmStep.value  = 1
   await loadDebug()
 }
 
-async function clearLesson(lessonId: string) {
-  await db.vocabProgress.where('lessonId').equals(lessonId).delete()
-  await db.sectionProgress.where('lessonId').equals(lessonId).delete()
+function cancelClear() {
+  confirmClear.value = null
+  confirmStep.value  = 1
+}
+
+const confirmLessonId = ref<string | null>(null)
+const confirmLessonStep = ref<1 | 2>(1)
+
+function requestClearLesson(lessonId: string) {
+  confirmLessonId.value   = lessonId
+  confirmLessonStep.value = 1
+}
+
+async function doClearLesson() {
+  if (!confirmLessonId.value || confirmLessonStep.value !== 2) return
+  await db.vocabProgress.where('lessonId').equals(confirmLessonId.value).delete()
+  await db.sectionProgress.where('lessonId').equals(confirmLessonId.value).delete()
+  confirmLessonId.value   = null
+  confirmLessonStep.value = 1
   await loadDebug()
 }
 
@@ -208,7 +235,7 @@ function lessonTitle(id: string) {
             </option>
           </select>
           <button v-if="filterLesson" class="btn-clear-lesson danger-sm"
-            @click="clearLesson(filterLesson)">清除该课程数据</button>
+            @click="requestClearLesson(filterLesson)">清除该课程数据</button>
         </div>
 
         <div class="debug-table-wrap">
@@ -244,28 +271,77 @@ function lessonTitle(id: string) {
         <div class="danger-zone">
           <div class="danger-title">⚠️ 危险操作</div>
           <div class="danger-btns">
-            <button class="btn-danger" @click="confirmClear = 'vocab'">清除复习进度</button>
-            <button class="btn-danger" @click="confirmClear = 'sections'">清除阅读进度</button>
-            <button class="btn-danger btn-danger-all" @click="confirmClear = 'all'">清除全部数据</button>
+            <button class="btn-danger" @click="requestClear('vocab')">清除复习进度</button>
+            <button class="btn-danger" @click="requestClear('sections')">清除阅读进度</button>
+            <button class="btn-danger btn-danger-all" @click="requestClear('all')">清除全部数据</button>
           </div>
         </div>
 
       </template>
     </section>
 
-    <!-- Confirm dialog -->
-    <div v-if="confirmClear" class="confirm-overlay" @click.self="confirmClear = null">
+    <!-- Confirm dialog (global clear) -->
+    <div v-if="confirmClear" class="confirm-overlay" @click.self="cancelClear">
       <div class="confirm-box">
-        <div class="confirm-icon">⚠️</div>
-        <div class="confirm-msg">
-          <template v-if="confirmClear === 'all'">确认清除<b>全部学习数据</b>？此操作不可撤销。</template>
-          <template v-else-if="confirmClear === 'vocab'">确认清除所有<b>复习进度</b>？</template>
-          <template v-else>确认清除所有<b>阅读进度</b>？</template>
+        <div class="confirm-step-indicator">
+          <span :class="['step-dot', { active: confirmStep >= 1 }]" />
+          <span :class="['step-dot', { active: confirmStep >= 2 }]" />
         </div>
-        <div class="confirm-btns">
-          <button class="btn-cancel" @click="confirmClear = null">取消</button>
-          <button class="btn-confirm-danger" @click="doClear">确认清除</button>
+
+        <!-- Step 1 -->
+        <template v-if="confirmStep === 1">
+          <div class="confirm-icon">⚠️</div>
+          <div class="confirm-msg">
+            <template v-if="confirmClear === 'all'">确定要清除<b>全部学习数据</b>吗？</template>
+            <template v-else-if="confirmClear === 'vocab'">确定要清除所有<b>复习进度</b>吗？</template>
+            <template v-else>确定要清除所有<b>阅读进度</b>吗？</template>
+          </div>
+          <div class="confirm-btns">
+            <button class="btn-cancel" @click="cancelClear">取消</button>
+            <button class="btn-confirm-danger" @click="confirmStep1">是的，继续 →</button>
+          </div>
+        </template>
+
+        <!-- Step 2 -->
+        <template v-else>
+          <div class="confirm-icon">🚨</div>
+          <div class="confirm-msg">
+            <template v-if="confirmClear === 'all'"><b>最后确认：</b>清除后<b>无法恢复</b>，全部进度将丢失。</template>
+            <template v-else-if="confirmClear === 'vocab'"><b>最后确认：</b>所有单词的复习记录将被<b>永久删除</b>。</template>
+            <template v-else><b>最后确认：</b>所有章节的阅读记录将被<b>永久删除</b>。</template>
+          </div>
+          <div class="confirm-btns">
+            <button class="btn-cancel" @click="cancelClear">我再想想</button>
+            <button class="btn-confirm-danger" @click="doClear">确认，永久删除</button>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- Confirm dialog (per-lesson clear) -->
+    <div v-if="confirmLessonId" class="confirm-overlay" @click.self="confirmLessonId = null; confirmLessonStep = 1">
+      <div class="confirm-box">
+        <div class="confirm-step-indicator">
+          <span :class="['step-dot', { active: confirmLessonStep >= 1 }]" />
+          <span :class="['step-dot', { active: confirmLessonStep >= 2 }]" />
         </div>
+
+        <template v-if="confirmLessonStep === 1">
+          <div class="confirm-icon">⚠️</div>
+          <div class="confirm-msg">确定要清除课程<b>「{{ lessonTitle(confirmLessonId!) }}」</b>的数据吗？</div>
+          <div class="confirm-btns">
+            <button class="btn-cancel" @click="confirmLessonId = null; confirmLessonStep = 1">取消</button>
+            <button class="btn-confirm-danger" @click="confirmLessonStep = 2">是的，继续 →</button>
+          </div>
+        </template>
+        <template v-else>
+          <div class="confirm-icon">🚨</div>
+          <div class="confirm-msg"><b>最后确认：</b>该课程的所有进度将被<b>永久删除</b>。</div>
+          <div class="confirm-btns">
+            <button class="btn-cancel" @click="confirmLessonId = null; confirmLessonStep = 1">我再想想</button>
+            <button class="btn-confirm-danger" @click="doClearLesson">确认，永久删除</button>
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -500,6 +576,19 @@ function lessonTitle(id: string) {
   max-width: 320px;
   text-align: center;
 }
+.confirm-step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.step-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background .2s;
+}
+.step-dot.active { background: var(--red); }
 .confirm-icon { font-size: 2rem; margin-bottom: 12px; }
 .confirm-msg { font-size: 0.95rem; color: var(--text1); margin-bottom: 24px; line-height: 1.5; }
 .confirm-msg b { color: var(--red); }
