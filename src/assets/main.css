@@ -377,8 +377,15 @@ rt { font-size: 0.55em; color: var(--accent2); }
 .loading { text-align: center; padding: 80px; color: var(--text2); }
 
 /* ── Inline styles ────────────────────────────────────────────────── */
-.inlines strong { color: var(--text); }
-.inlines em     { color: var(--text2); font-style: italic; }
+.inlines strong { color: var(--text); font-weight: 700; }
+/* em = key grammar point (particle, conjugation) — underlined accent like original */
+.inlines em {
+  font-style: normal;
+  color: var(--accent2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(167, 139, 250, 0.5);
+}
 
 /* ── Audio button ─────────────────────────────────────────────────── */
 .audio-btn {
