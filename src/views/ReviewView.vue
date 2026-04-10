@@ -3,6 +3,7 @@ import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { loadData, getLesson, lessons } from '../stores/data'
 import { getDueVocab, recordVocabResult } from '../stores/db'
+import { getSetting } from '../utils/settings'
 import type { VocabProgress } from '../types'
 
 const router = useRouter()
@@ -56,7 +57,7 @@ const vocabData = computed(() => {
 
 onMounted(async () => {
   await loadData()
-  queue.value = await getDueVocab(30)
+  queue.value = await getDueVocab(getSetting('reviewLimit'))
   done.value = queue.value.length === 0
 })
 

@@ -83,7 +83,10 @@ function progressPct(p: LessonProg) {
 <template>
   <div class="home">
     <header class="home-header">
-      <h1 class="app-title">鍛語 <span class="app-sub">TANGO</span></h1>
+      <div class="header-top">
+        <h1 class="app-title">鍛語 <span class="app-sub">TANGO</span></h1>
+        <button class="btn-settings" @click="router.push('/settings')" title="设置">⚙️</button>
+      </div>
       <p class="app-desc">日语语法指南 · 互动学习版</p>
       <div v-if="meta" class="meta-badges">
         <span class="badge">{{ meta.totalLessons }} 课</span>
