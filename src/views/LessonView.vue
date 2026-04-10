@@ -5,6 +5,7 @@ import { loadData, getLesson, lessons } from '../stores/data'
 import { markSectionRead, getLessonProgress, db, vocabId } from '../stores/db'
 import type { VocabItem, SectionStatus } from '../types'
 import LessonBlock from '../components/blocks/LessonBlock.vue'
+import BlockExercises from '../components/blocks/BlockExercises.vue'
 
 const route  = useRoute()
 const router = useRouter()
@@ -129,6 +130,12 @@ function scrollToSection(i: number) {
           <span v-else class="read-badge">✓ 已读</span>
         </div>
       </section>
+
+      <!-- Exercises -->
+      <div v-if="lesson.exercises?.length" class="lesson-exercises">
+        <h2 class="section-title" style="margin-bottom: 16px">📝 练习题</h2>
+        <BlockExercises :exercises="lesson.exercises" />
+      </div>
 
       <!-- Prev / Next navigation -->
       <nav class="lesson-pagination">

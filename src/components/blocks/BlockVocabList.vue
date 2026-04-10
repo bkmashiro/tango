@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import type { BlockVocabList, VocabItem } from '../../types'
+import { speakJapanese } from '../../utils/speak'
 
 const props = defineProps<{ block: BlockVocabList; addedWords?: Set<string> }>()
 const emit = defineEmits<{ addToSRS: [item: VocabItem] }>()
@@ -26,7 +27,7 @@ function onAdd(item: VocabItem) {
     <div v-if="block.label" class="vocab-label">{{ block.label }}</div>
     <ul class="vocab-list">
       <li v-for="item in block.items" :key="item.word" class="vocab-item">
-        <span class="vocab-word">{{ item.word }}</span>
+        <span class="vocab-word speakable" @click="speakJapanese(item.word)">{{ item.word }}</span>
         <span v-if="item.reading_display" class="vocab-reading">
           【{{ item.reading_display }}】
         </span>

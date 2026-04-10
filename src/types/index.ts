@@ -42,6 +42,26 @@ export type Block =
   | BlockVocabList | BlockParagraph | BlockHeading
   | BlockNote | BlockExamples | BlockTable | BlockSumbox | BlockVideo
 
+// ── Exercise types ─────────────────────────────────────────────────────
+export interface ExerciseConjugationForm {
+  label: string
+  answer: string
+}
+
+export interface ExerciseConjugation {
+  type: 'conjugation'
+  word: string
+  forms: ExerciseConjugationForm[]
+}
+
+export interface ExerciseQA {
+  type: 'qa'
+  question: string
+  answer: string
+}
+
+export type Exercise = ExerciseConjugation | ExerciseQA
+
 // ── Section / Lesson / Chapter ─────────────────────────────────────────
 export interface Section {
   title: string | null
@@ -57,6 +77,7 @@ export interface Lesson {
   totalVocab: number
   totalExamples: number
   sections: Section[]
+  exercises?: Exercise[]
 }
 
 export interface Chapter {

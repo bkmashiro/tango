@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { BlockExamples } from '../../types'
 import InlineRenderer from './InlineRenderer.vue'
+import { speakJapanese } from '../../utils/speak'
 
 const props = defineProps<{ block: BlockExamples }>()
 
@@ -20,7 +21,7 @@ const items = computed(() =>
       :key="i"
       class="example-item"
     >
-      <span class="example-jp">
+      <span class="example-jp example-jp--speak" @click="speakJapanese(ex.jp)" title="点击朗读">
         <InlineRenderer v-if="ex.inlines.length" :inlines="ex.inlines" />
         <template v-else>{{ ex.jp }}</template>
       </span>
