@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { loadData, getLesson } from '../stores/data'
+import { loadData, getLesson, lessons } from '../stores/data'
 import { getDueVocab, recordVocabResult } from '../stores/db'
 import type { VocabProgress } from '../types'
 
@@ -15,13 +15,41 @@ const correct = ref(0)
 
 const card = computed(() => queue.value[current.value])
 
+/** Normalize a stored word that may have been saved before parsing improvements.
+ *  Handles old formats like "ざ っ し (za-s-shi) - 杂志" → "ざっし"
+ *  Also handles full-width parentheses （）. */
+function normalizeWord(w: string): string {
+  // Strip romaji hints in ASCII or full-width parens: (za-s-shi) or （za-s-shi）
+  let s = w.replace(/\s*[(\uff08][a-zA-Z][a-zA-Z\s\-.]*[)\uff09]\s*/g, ' ').trim()
+  // Collapse spaces between CJK/kana characters
+  s = s.replace(/([\u3040-\u30ff\u4e00-\u9fff])\s+(?=[\u3040-\u30ff\u4e00-\u9fff])/g, '$1')
+  // Strip meaning part if full entry was accidentally stored: "word - meaning"
+  s = s.replace(/\s+[-－]\s+.+$/, '')
+  // Strip reading brackets if stored with them: "word【reading】"
+  s = s.replace(/\s*【[^】]+】.*$/, '')
+  return s.trim()
+}
+
 const vocabData = computed(() => {
   if (!card.value) return null
+  const raw     = card.value.word
+  const cleaned = normalizeWord(raw)
+
+  // First try the stored lesson
   const lesson = getLesson(card.value.lessonId)
-  if (!lesson) return null
-  for (const sec of lesson.sections) {
-    const found = sec.vocab.find(v => v.word === card.value.word)
-    if (found) return found
+  if (lesson) {
+    for (const sec of lesson.sections) {
+      const found = sec.vocab.find(v => v.word === raw || v.word === cleaned || v.reading === cleaned)
+      if (found) return found
+    }
+  }
+
+  // Fallback: search ALL lessons (handles lessonId mismatch or kana-only vs kanji entries)
+  for (const l of lessons.value) {
+    for (const sec of l.sections) {
+      const found = sec.vocab.find(v => v.word === raw || v.word === cleaned || v.reading === cleaned)
+      if (found) return found
+    }
   }
   return null
 })
@@ -67,7 +95,7 @@ async function respond(isCorrect: boolean) {
       </div>
 
       <div class="flash-card">
-        <div class="card-word">{{ card.word }}</div>
+        <div class="card-word">{{ vocabData?.word ?? normalizeWord(card.word) }}</div>
         <div v-if="vocabData?.reading_display" class="card-reading">
           {{ vocabData.reading_display }}
         </div>

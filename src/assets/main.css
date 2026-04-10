@@ -339,9 +339,13 @@ rt { font-size: 0.55em; color: var(--accent2); }
 }
 .card-word {
   font-family: var(--font-jp);
-  font-size: 3rem;
+  font-size: clamp(1.6rem, 8vw, 3rem);
   font-weight: 700;
   line-height: 1.2;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  width: 100%;
+  max-width: 100%;
 }
 .card-reading { font-family: var(--font-jp); font-size: 1rem; color: var(--text2); }
 .card-mask { font-size: 1.5rem; color: var(--border); letter-spacing: 8px; margin: 12px 0; }
@@ -358,10 +362,11 @@ rt { font-size: 0.55em; color: var(--accent2); }
 .btn-reveal:hover { border-color: var(--accent); }
 .card-meaning { font-size: 1.4rem; font-weight: 600; margin: 8px 0; }
 .card-type { font-size: 0.8rem; color: var(--accent2); background: #1e1a3a; border-radius: 4px; padding: 2px 10px; }
-.card-btns { display: flex; gap: 12px; margin-top: 24px; }
+.card-btns { display: flex; gap: 12px; margin-top: 24px; width: 100%; }
 .btn-wrong, .btn-correct {
-  flex: 1; padding: 12px; border: none;
+  flex: 1; padding: 12px 8px; border: none;
   border-radius: 10px; font-size: 1rem; font-weight: 600;
+  white-space: nowrap;
   transition: opacity .15s;
 }
 .btn-wrong   { background: #3b1515; color: var(--red); }
