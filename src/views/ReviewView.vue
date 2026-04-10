@@ -65,7 +65,71 @@ const deckLabel = computed(() => {
   return '全部'
 })
 
-async function loadQueue() {
+// ── Session persistence ─────────────────────────────────────────────────
+const SESSION_KEY = 'tango_review_session'
+const SESSION_TTL = 12 * 60 * 60 * 1000   // 12 hours
+
+interface SavedSession {
+  ids: string[]          // VocabProgress IDs in order
+  current: number
+  correct: number
+  deck: string
+  savedAt: number
+}
+
+function saveSession() {
+  if (done.value || queue.value.length === 0) {
+    localStorage.removeItem(SESSION_KEY)
+    return
+  }
+  const s: SavedSession = {
+    ids:     queue.value.map(v => v.id),
+    current: current.value,
+    correct: correct.value,
+    deck:    deck.value,
+    savedAt: Date.now(),
+  }
+  localStorage.setItem(SESSION_KEY, JSON.stringify(s))
+}
+
+function clearSession() {
+  localStorage.removeItem(SESSION_KEY)
+}
+
+async function tryRestoreSession(): Promise<boolean> {
+  try {
+    const raw = localStorage.getItem(SESSION_KEY)
+    if (!raw) return false
+    const s: SavedSession = JSON.parse(raw)
+    if (Date.now() - s.savedAt > SESSION_TTL) { clearSession(); return false }
+    if (s.deck !== deck.value) return false
+    if (!s.ids?.length) return false
+
+    // Reload the actual VocabProgress records from DB in saved order
+    const { db } = await import('../stores/db')
+    const all = await db.vocabProgress.bulkGet(s.ids)
+    const restored = all.filter(Boolean) as typeof queue.value
+    if (restored.length === 0) return false
+
+    queue.value   = restored
+    current.value = Math.min(s.current, restored.length - 1)
+    correct.value = s.correct
+    phase.value   = 'question'
+    done.value    = false
+    history.value = []
+    cardKey.value++
+    return true
+  } catch {
+    clearSession()
+    return false
+  }
+}
+
+async function loadQueue(fresh = false) {
+  if (!fresh) {
+    const restored = await tryRestoreSession()
+    if (restored) return
+  }
   queue.value   = await getDueVocab(getSetting('reviewLimit'), deck.value)
   current.value = 0
   phase.value   = 'question'
@@ -73,6 +137,7 @@ async function loadQueue() {
   done.value    = queue.value.length === 0
   history.value = []
   cardKey.value++
+  saveSession()
 }
 
 onMounted(async () => {
@@ -91,7 +156,8 @@ onUnmounted(() => {
 
 async function switchDeck(newDeck: 'all' | 'library' | 'favorites') {
   deck.value = newDeck
-  await loadQueue()
+  clearSession()
+  await loadQueue(true)
 }
 
 function showAnswer() {
@@ -122,9 +188,11 @@ function goForward() {
   const next = current.value + 1
   if (next >= queue.value.length) {
     done.value = true
+    clearSession()
   } else {
     current.value = next
     phase.value   = 'question'
+    saveSession()
   }
 }
 
@@ -135,6 +203,7 @@ function goBack() {
   cardKey.value++
   current.value--
   phase.value = 'question'
+  saveSession()
 }
 
 function handleKey(e: KeyboardEvent) {
@@ -192,8 +261,11 @@ function handleKey(e: KeyboardEvent) {
     <div v-if="done" class="review-done">
       <div class="done-emoji">🎉</div>
       <h2>复习完成</h2>
-      <p>正确率 {{ queue.length ? Math.round(correct / queue.length * 100) : 0 }}%</p>
-      <button class="btn-primary" @click="router.push('/')">回主页</button>
+      <p>{{ queue.length }} 词 · 正确率 {{ queue.length ? Math.round(correct / queue.length * 100) : 0 }}%</p>
+      <div class="done-btns">
+        <button class="btn-primary" @click="router.push('/')">回主页</button>
+        <button class="btn-secondary" @click="loadQueue(true)">再来一组</button>
+      </div>
     </div>
 
     <!-- Card stage with ghost cards -->
@@ -261,6 +333,11 @@ function handleKey(e: KeyboardEvent) {
           <div class="ghost-label">下一张</div>
         </div>
         <div v-else class="card-ghost-placeholder" />
+      </div>
+
+      <!-- Resample link -->
+      <div class="resample-row">
+        <button class="btn-resample" @click="loadQueue(true)">↺ 重新采样</button>
       </div>
 
       <!-- Keyboard hint bar -->
@@ -343,6 +420,36 @@ function handleKey(e: KeyboardEvent) {
   cursor: pointer;
 }
 .btn-primary:hover { opacity: .85; }
+
+.done-btns { display: flex; gap: 12px; justify-content: center; }
+.btn-secondary {
+  padding: 12px 32px;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn-secondary:hover { background: rgba(139,92,246,.1); }
+
+.resample-row {
+  margin-top: 10px;
+  text-align: center;
+}
+.btn-resample {
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color .15s;
+}
+.btn-resample:hover { color: var(--text1); }
 
 /* Card stage */
 .card-stage {
@@ -509,16 +616,16 @@ function handleKey(e: KeyboardEvent) {
 .btn-reveal:hover { opacity: .85; }
 
 .btn-quick-skip {
-  padding: 12px 18px;
+  padding: 8px 14px;
   background: transparent;
   color: var(--accent2);
   border: 1px solid var(--accent2);
-  border-radius: 10px;
-  font-size: 0.88rem;
+  border-radius: 8px;
+  font-size: 0.82rem;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   transition: background .15s;
 }
 .btn-quick-skip:hover { background: rgba(139,92,246,.12); }
