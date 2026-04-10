@@ -9,7 +9,7 @@ export async function loadData() {
   if (data.value) return
   loading.value = true
   try {
-    const res = await fetch('/lessons.json')
+    const res = await fetch(import.meta.env.BASE_URL + 'lessons.json')
     data.value = await res.json()
   } catch (e) {
     error.value = String(e)
