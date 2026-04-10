@@ -628,10 +628,9 @@ function handleKey(e: KeyboardEvent) {
 }
 
 .card-word-row {
+  position: relative;
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 10px;
 }
 .card-word {
   font-family: var(--font-jp);
@@ -643,17 +642,18 @@ function handleKey(e: KeyboardEvent) {
   overflow-wrap: break-word;
 }
 .btn-speak {
+  position: absolute;
+  right: 0;
+  bottom: 0;
   background: none;
   border: none;
-  font-size: 1.1rem;
+  font-size: 1rem;
   cursor: pointer;
-  opacity: 0.4;
+  opacity: 0.35;
   padding: 4px;
   border-radius: 6px;
   transition: opacity .15s;
   line-height: 1;
-  align-self: flex-end;
-  margin-bottom: 4px;
 }
 .btn-speak:hover { opacity: 0.9; }
 .card-reading {
