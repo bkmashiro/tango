@@ -248,6 +248,8 @@ button { cursor: pointer; font-family: inherit; }
   gap: 4px;
 }
 .example-item:hover { border-color: var(--accent); }
+.example-item.clickable { cursor: pointer; }
+.example-item:not(.clickable) { cursor: default; }
 .example-jp { font-family: var(--font-jp); font-size: 1.05rem; line-height: 1.6; }
 .example-zh { font-size: 0.85rem; color: var(--green); transition: opacity .2s; }
 .example-zh.hidden { opacity: 0; filter: blur(4px); }

@@ -5,13 +5,16 @@ import InlineRenderer from './InlineRenderer.vue'
 
 const props = defineProps<{ block: BlockExamples }>()
 
-// Filter out non-Japanese items (external links, English-only text, etc.)
 const isJapanese = (s: string) => /[\u3040-\u30ff\u4e00-\u9fff]/.test(s)
-const items = computed(() => props.block.items.filter(ex => isJapanese(ex.jp)))
+const hasZh = (s: string) => s && s.trim().length > 0
 
-// Reassign Set on mutation so Vue tracks the change
+const items = computed(() =>
+  props.block.items.filter(ex => isJapanese(ex.jp))
+)
+
 const revealed = ref<Set<number>>(new Set())
-const toggle = (i: number) => {
+const toggle = (i: number, zh: string) => {
+  if (!hasZh(zh)) return
   const next = new Set(revealed.value)
   if (next.has(i)) next.delete(i)
   else next.add(i)
@@ -25,16 +28,19 @@ const toggle = (i: number) => {
       v-for="(ex, i) in items"
       :key="i"
       class="example-item"
-      @click="toggle(i)"
+      :class="{ clickable: hasZh(ex.zh) }"
+      @click="toggle(i, ex.zh)"
     >
       <span class="example-jp">
         <InlineRenderer v-if="ex.inlines.length" :inlines="ex.inlines" />
         <template v-else>{{ ex.jp }}</template>
       </span>
-      <span class="example-zh" :class="{ hidden: !revealed.has(i) }">
-        {{ ex.zh || '　' }}
-      </span>
-      <span v-if="!revealed.has(i)" class="reveal-hint">点击查看</span>
+      <template v-if="hasZh(ex.zh)">
+        <span class="example-zh" :class="{ hidden: !revealed.has(i) }">
+          {{ ex.zh }}
+        </span>
+        <span v-if="!revealed.has(i)" class="reveal-hint">点击查看</span>
+      </template>
     </li>
   </ol>
 </template>
