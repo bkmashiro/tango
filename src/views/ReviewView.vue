@@ -224,27 +224,32 @@ function handleKey(e: KeyboardEvent) {
                 {{ vocabData.reading_display }}
               </div>
 
-              <!-- Question phase -->
-              <div v-if="phase === 'question'" class="card-question">
-                <div class="card-mask">···</div>
-                <div class="card-actions">
-                  <button class="btn-reveal" @click="showAnswer">
-                    显示意思 <kbd>Space</kbd>
-                  </button>
-                  <button class="btn-quick-skip" @click="quickSkip">
-                    ⚡ 已知 <kbd>→</kbd>
-                  </button>
-                </div>
-              </div>
+              <!-- Body: fixed height so card doesn't jump between phases -->
+              <div class="card-body">
+                <Transition name="phase-fade" mode="out-in">
+                  <!-- Question phase -->
+                  <div v-if="phase === 'question'" class="card-question" key="q">
+                    <div class="card-mask">···</div>
+                    <div class="card-actions">
+                      <button class="btn-reveal" @click="showAnswer">
+                        显示意思 <kbd>Space</kbd>
+                      </button>
+                      <button class="btn-quick-skip" @click="quickSkip">
+                        ⚡ 已知 <kbd>→</kbd>
+                      </button>
+                    </div>
+                  </div>
 
-              <!-- Answer phase -->
-              <div v-else class="card-answer">
-                <div class="card-meaning">{{ vocabData?.meaning ?? '—' }}</div>
-                <div v-if="vocabData?.type" class="card-type">{{ vocabData.type }}</div>
-                <div class="card-btns">
-                  <button class="btn-wrong"   @click="respond(false)">✗ 忘了 <kbd>←</kbd></button>
-                  <button class="btn-correct" @click="respond(true)">✓ 记得 <kbd>→</kbd></button>
-                </div>
+                  <!-- Answer phase -->
+                  <div v-else class="card-answer" key="a">
+                    <div class="card-meaning">{{ vocabData?.meaning ?? '—' }}</div>
+                    <div v-if="vocabData?.type" class="card-type">{{ vocabData.type }}</div>
+                    <div class="card-btns">
+                      <button class="btn-wrong"   @click="respond(false)">✗ 忘了 <kbd>←</kbd></button>
+                      <button class="btn-correct" @click="respond(true)">✓ 记得 <kbd>→</kbd></button>
+                    </div>
+                  </div>
+                </Transition>
               </div>
             </div>
           </Transition>
@@ -462,12 +467,22 @@ function handleKey(e: KeyboardEvent) {
   margin-top: -6px;
 }
 
+/* Fixed-height body prevents card from jumping when phase changes */
+.card-body {
+  width: 100%;
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+
 .card-question {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  margin-top: 12px;
+  width: 100%;
 }
 .card-mask { font-size: 2rem; color: var(--text2); letter-spacing: .2em; }
 
@@ -572,6 +587,12 @@ kbd {
   justify-content: center;
   flex-wrap: wrap;
 }
+
+/* Phase fade (question ↔ answer within same card) */
+.phase-fade-enter-active,
+.phase-fade-leave-active { transition: opacity .15s ease; }
+.phase-fade-enter-from,
+.phase-fade-leave-to     { opacity: 0; }
 
 /* Slide transitions */
 .slide-left-enter-active,
