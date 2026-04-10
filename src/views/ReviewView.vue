@@ -577,11 +577,13 @@ function handleKey(e: KeyboardEvent) {
 /* Fixed-height body prevents card from jumping when phase changes */
 .card-body {
   width: 100%;
-  min-height: 160px;
+  height: 200px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-top: 8px;
+  overflow: visible;
 }
 
 .card-question {
