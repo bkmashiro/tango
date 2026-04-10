@@ -45,6 +45,19 @@ export async function markSectionRead(lessonId: string, idx: number) {
   })
 }
 
+export async function toggleSectionRead(lessonId: string, idx: number) {
+  const id = sectionId(lessonId, idx)
+  const existing = await db.sectionProgress.get(id)
+  if (existing?.status === 'read' || existing?.status === 'reviewing') {
+    await db.sectionProgress.delete(id)
+  } else {
+    await db.sectionProgress.put({
+      id, lessonId, sectionIndex: idx,
+      status: 'read', readAt: Date.now(),
+    })
+  }
+}
+
 export async function getLessonProgress(lessonId: string) {
   return db.sectionProgress.where('lessonId').equals(lessonId).toArray()
 }
@@ -52,6 +65,11 @@ export async function getLessonProgress(lessonId: string) {
 // ── Vocab helpers ──────────────────────────────────────────────────────
 export function vocabId(lessonId: string, word: string) {
   return `${lessonId}:${word}`
+}
+
+/** Remove a vocab word from the review queue entirely. */
+export async function removeVocab(lessonId: string, word: string) {
+  await db.vocabProgress.delete(vocabId(lessonId, word))
 }
 
 /** Bulk-add vocab words for a lesson to the library deck, skipping ones already present. */

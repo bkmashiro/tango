@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { loadData, getLesson, lessons } from '../stores/data'
-import { markSectionRead, getLessonProgress, db, vocabId, bulkAddVocab } from '../stores/db'
+import { toggleSectionRead, getLessonProgress, db, vocabId, removeVocab } from '../stores/db'
 import type { VocabItem, SectionStatus } from '../types'
 import LessonBlock from '../components/blocks/LessonBlock.vue'
 import BlockExercises from '../components/blocks/BlockExercises.vue'
@@ -39,11 +39,9 @@ async function loadProgress() {
 onMounted(async () => {
   await loadData()
   await loadProgress()
-  // Save last visited lesson
   localStorage.setItem('lastLesson', lessonId.value)
 })
 
-// Reload progress when lesson changes (router navigation)
 watch(lessonId, async () => {
   await loadData()
   await loadProgress()
@@ -51,39 +49,44 @@ watch(lessonId, async () => {
   window.scrollTo(0, 0)
 })
 
+/** Toggle a section read/unread. No vocab side effects — user controls their queue. */
 async function onSectionRead(idx: number) {
-  await markSectionRead(lessonId.value, idx)
-  sectionStatuses.value[idx] = 'read'
-  // Auto-add this section's vocab to the library deck
-  const sec = lesson.value?.sections[idx]
-  if (sec?.vocab?.length) {
-    const words = sec.vocab.map(v => v.word).filter(Boolean)
-    await bulkAddVocab(lessonId.value, words)
-    const next = new Set(addedWords.value)
-    words.forEach(w => next.add(w))
-    addedWords.value = next
+  await toggleSectionRead(lessonId.value, idx)
+  const wasRead = sectionStatuses.value[idx] === 'read' || sectionStatuses.value[idx] === 'reviewing'
+  if (wasRead) {
+    const next = { ...sectionStatuses.value }
+    delete next[idx]
+    sectionStatuses.value = next
+  } else {
+    sectionStatuses.value = { ...sectionStatuses.value, [idx]: 'read' }
   }
 }
 
-async function addToSRS(item: VocabItem) {
-  if (addedWords.value.has(item.word)) return
-  const id = vocabId(lessonId.value, item.word)
-  await db.vocabProgress.put({
-    id,
-    lessonId: lessonId.value,
-    word: item.word,
-    correct: 0, incorrect: 0,
-    interval: 1,
-    nextReview: Date.now(),
-    deck: 'favorites',
-  })
-  const next = new Set(addedWords.value)
-  next.add(item.word)
-  addedWords.value = next
-}
-
-function sectionVocabCount(sectionIdx: number) {
-  return lesson.value?.sections[sectionIdx]?.vocab?.length ?? 0
+/** Toggle a word in/out of the review queue. */
+async function toggleSRS(item: VocabItem) {
+  if (!item.word) return
+  if (addedWords.value.has(item.word)) {
+    // Remove from queue
+    await removeVocab(lessonId.value, item.word)
+    const next = new Set(addedWords.value)
+    next.delete(item.word)
+    addedWords.value = next
+  } else {
+    // Add to queue
+    const id = vocabId(lessonId.value, item.word)
+    await db.vocabProgress.put({
+      id,
+      lessonId: lessonId.value,
+      word: item.word,
+      correct: 0, incorrect: 0,
+      interval: 1,
+      nextReview: Date.now(),
+      deck: 'favorites',
+    })
+    const next = new Set(addedWords.value)
+    next.add(item.word)
+    addedWords.value = next
+  }
 }
 
 function scrollToSection(i: number) {
@@ -130,23 +133,18 @@ function scrollToSection(i: number) {
           :key="bi"
           :block="block"
           :added-words="addedWords"
-          @addToSRS="addToSRS"
+          @toggleSRS="toggleSRS"
         />
 
         <div v-if="sec.title" class="section-footer">
+          <!-- Toggle button: shows current state, click to toggle -->
           <button
-            v-if="!sectionStatuses[i] || sectionStatuses[i] === 'unread'"
             class="btn-read"
+            :class="{ 'btn-read-active': sectionStatuses[i] === 'read' || sectionStatuses[i] === 'reviewing' }"
             @click="onSectionRead(i)"
           >
-            ✓ 已读
+            {{ (sectionStatuses[i] === 'read' || sectionStatuses[i] === 'reviewing') ? '✓ 已读' : '○ 标为已读' }}
           </button>
-          <span v-else class="read-badge">✓ 已读</span>
-
-          <span
-            v-if="sectionStatuses[i] && sectionStatuses[i] !== 'unread' && sectionVocabCount(i) > 0"
-            class="added-badge"
-          >📚 已入学习库 ({{ sectionVocabCount(i) }})</span>
         </div>
       </section>
 
@@ -180,3 +178,28 @@ function scrollToSection(i: number) {
 
   <div v-else class="loading">加载中…</div>
 </template>
+
+<style scoped>
+/* Override the read button to show toggle state */
+.btn-read {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-read:hover { border-color: var(--accent); color: var(--accent); }
+.btn-read.btn-read-active {
+  background: rgba(34,197,94,.12);
+  border-color: var(--green);
+  color: var(--green);
+}
+.btn-read.btn-read-active:hover {
+  background: rgba(239,68,68,.1);
+  border-color: var(--red);
+  color: var(--red);
+}
+</style>

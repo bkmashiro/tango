@@ -4,20 +4,21 @@ import type { BlockVocabList, VocabItem } from '../../types'
 import { speakJapanese } from '../../utils/speak'
 
 const props = defineProps<{ block: BlockVocabList; addedWords?: Set<string> }>()
-const emit = defineEmits<{ addToSRS: [item: VocabItem] }>()
+const emit  = defineEmits<{ toggleSRS: [item: VocabItem] }>()
 
 const added = ref<Set<string>>(new Set())
 
-// Sync when parent finishes loading DB words
 watch(() => props.addedWords, (val) => {
-  if (val && val.size > 0) added.value = new Set(val)
+  added.value = val ? new Set(val) : new Set()
 }, { immediate: true })
 
-function onAdd(item: VocabItem) {
-  if (added.value.has(item.word)) return
-  emit('addToSRS', item)
+function onToggle(item: VocabItem) {
+  if (!item.word) return
+  emit('toggleSRS', item)
+  // Optimistic local update
   const next = new Set(added.value)
-  next.add(item.word)
+  if (next.has(item.word)) next.delete(item.word)
+  else next.add(item.word)
   added.value = next
 }
 </script>
@@ -37,8 +38,8 @@ function onAdd(item: VocabItem) {
         <button
           class="vocab-star"
           :class="{ starred: added.has(item.word) }"
-          :title="added.has(item.word) ? '已加入收藏夹' : '加入收藏夹'"
-          @click="onAdd(item)"
+          :title="added.has(item.word) ? '点击取消复习' : '加入复习'"
+          @click="onToggle(item)"
         >
           {{ added.has(item.word) ? '★' : '☆' }}
         </button>
