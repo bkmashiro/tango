@@ -179,7 +179,7 @@ button { cursor: pointer; font-family: inherit; }
 
 .section-footer {
   margin-top: 24px;
-  display: flex; justify-content: flex-end;
+  display: flex; justify-content: flex-end; align-items: center; gap: 10px; flex-wrap: wrap;
 }
 .btn-read {
   background: var(--accent);
@@ -193,6 +193,21 @@ button { cursor: pointer; font-family: inherit; }
 }
 .btn-read:hover { opacity: .85; }
 .read-badge { color: var(--green); font-size: 0.85rem; }
+.btn-add-all {
+  display: flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: 8px;
+  border: 1px solid var(--accent2);
+  background: transparent; color: var(--accent2);
+  font-size: 0.82rem; cursor: pointer;
+  transition: background .15s;
+}
+.btn-add-all:hover { background: rgba(139,92,246,.12); }
+.btn-add-all-count {
+  font-size: 0.75rem; opacity: 0.7;
+  background: rgba(139,92,246,.15); border-radius: 10px;
+  padding: 1px 6px;
+}
+.added-badge { color: var(--green); font-size: 0.82rem; }
 
 /* ── Blocks ───────────────────────────────────────────────────────── */
 

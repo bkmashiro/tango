@@ -44,6 +44,24 @@ export function vocabId(lessonId: string, word: string) {
   return `${lessonId}:${word}`
 }
 
+/** Bulk-add vocab words for a lesson, skipping ones already present. */
+export async function bulkAddVocab(lessonId: string, words: string[]) {
+  const now = Date.now()
+  await db.transaction('rw', db.vocabProgress, async () => {
+    for (const word of words) {
+      const id = vocabId(lessonId, word)
+      const existing = await db.vocabProgress.get(id)
+      if (!existing) {
+        await db.vocabProgress.put({
+          id, lessonId, word,
+          correct: 0, incorrect: 0,
+          interval: 1, nextReview: now,
+        })
+      }
+    }
+  })
+}
+
 export async function getDueVocab(limit = 20) {
   const now = Date.now()
   return db.vocabProgress

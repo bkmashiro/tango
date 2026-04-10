@@ -2,8 +2,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { loadSettings, saveSettings } from '../utils/settings'
-import { db } from '../stores/db'
-import { loadData, getLesson } from '../stores/data'
+import { db, bulkAddVocab } from '../stores/db'
+import { loadData, getLesson, chapters, getLessonsForChapter } from '../stores/data'
 import type { VocabProgress, SectionProgress } from '../types'
 
 const router = useRouter()
@@ -138,17 +138,78 @@ function lessonTitle(id: string) {
   const l = getLesson(id)
   return l ? l.title : id
 }
+
+// ── Vocab Library ─────────────────────────────────────────────────────────
+const activeTab = ref<'settings' | 'library' | 'debug'>('settings')
+
+// Set of lessonIds currently in vocabProgress
+const addedLessonVocab = computed(() => {
+  const map: Record<string, Set<string>> = {}
+  for (const r of vocabRows.value) {
+    if (!map[r.lessonId]) map[r.lessonId] = new Set()
+    map[r.lessonId].add(r.word)
+  }
+  return map
+})
+
+function lessonAddedCount(lessonId: string) {
+  return addedLessonVocab.value[lessonId]?.size ?? 0
+}
+function lessonTotalVocab(lessonId: string) {
+  return getLesson(lessonId)?.sections.reduce((s, sec) => s + sec.vocab.length, 0) ?? 0
+}
+function lessonFullyAdded(lessonId: string) {
+  return lessonAddedCount(lessonId) >= lessonTotalVocab(lessonId) && lessonTotalVocab(lessonId) > 0
+}
+
+const addingLesson = ref<string | null>(null)
+
+async function addLessonVocab(lessonId: string) {
+  const lesson = getLesson(lessonId)
+  if (!lesson) return
+  addingLesson.value = lessonId
+  const words = lesson.sections.flatMap(s => s.vocab.map(v => v.word))
+  await bulkAddVocab(lessonId, words)
+  // refresh
+  const v = await db.vocabProgress.toArray()
+  vocabRows.value = v
+  addingLesson.value = null
+}
+
+async function addAllVocab() {
+  for (const ch of chapters.value) {
+    for (const lesson of getLessonsForChapter(ch.id)) {
+      if (!lessonFullyAdded(lesson.id)) {
+        await addLessonVocab(lesson.id)
+      }
+    }
+  }
+}
+
+const totalVocabInDB = computed(() => vocabRows.value.length)
+const totalVocabInData = computed(() =>
+  chapters.value.reduce((sum, ch) =>
+    sum + getLessonsForChapter(ch.id).reduce((s, l) =>
+      s + lessonTotalVocab(l.id), 0), 0)
+)
 </script>
 
 <template>
   <div class="settings-view">
     <nav class="review-nav">
       <button class="btn-back" @click="router.push('/')">← 返回</button>
-      <span class="review-progress">设置 &amp; 调试</span>
+      <span class="review-progress">设置</span>
     </nav>
 
+    <!-- Tabs -->
+    <div class="settings-tabs">
+      <button :class="['tab', { active: activeTab === 'settings' }]" @click="activeTab = 'settings'">⚙️ 设置</button>
+      <button :class="['tab', { active: activeTab === 'library' }]" @click="activeTab = 'library'">📚 词库</button>
+      <button :class="['tab', { active: activeTab === 'debug' }]" @click="activeTab = 'debug'">🔍 调试</button>
+    </div>
+
     <!-- ── Settings ────────────────────────────────────────────────── -->
-    <section class="settings-section">
+    <section v-show="activeTab === 'settings'" class="settings-section">
       <h2 class="settings-h2">⚙️ 设置</h2>
 
       <div class="setting-row">
@@ -192,8 +253,47 @@ function lessonTitle(id: string) {
       </button>
     </section>
 
+    <!-- ── Vocab Library ─────────────────────────────────────────── -->
+    <section v-show="activeTab === 'library'" class="settings-section">
+      <h2 class="settings-h2">📚 词库管理</h2>
+
+      <div class="library-summary">
+        <span>已加入复习：<b>{{ totalVocabInDB }}</b> / {{ totalVocabInData }} 词</span>
+        <button class="btn-add-all-global" @click="addAllVocab">⚡ 一键加入全部词汇</button>
+      </div>
+
+      <div v-for="ch in chapters" :key="ch.id" class="library-chapter">
+        <div class="library-chapter-title">{{ ch.title }}</div>
+        <div class="library-lessons">
+          <div
+            v-for="lesson in getLessonsForChapter(ch.id)"
+            :key="lesson.id"
+            class="library-lesson"
+          >
+            <div class="library-lesson-info">
+              <span class="library-lesson-name">{{ lesson.title }}</span>
+              <span class="library-lesson-count"
+                :class="lessonFullyAdded(lesson.id) ? 'count-done' : 'count-partial'">
+                {{ lessonAddedCount(lesson.id) }}/{{ lessonTotalVocab(lesson.id) }}
+              </span>
+            </div>
+            <button
+              v-if="!lessonFullyAdded(lesson.id) && lessonTotalVocab(lesson.id) > 0"
+              class="btn-lesson-add"
+              :disabled="addingLesson === lesson.id"
+              @click="addLessonVocab(lesson.id)"
+            >
+              {{ addingLesson === lesson.id ? '…' : '+ 加入' }}
+            </button>
+            <span v-else-if="lessonTotalVocab(lesson.id) > 0" class="lesson-done-badge">✓</span>
+            <span v-else class="lesson-no-vocab">无词汇</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ── Debug ───────────────────────────────────────────────────── -->
-    <section class="settings-section">
+    <section v-show="activeTab === 'debug'" class="settings-section">
       <h2 class="settings-h2">🔍 调试 / 数据</h2>
 
       <div v-if="loading" class="debug-loading">加载中…</div>
@@ -353,6 +453,110 @@ function lessonTitle(id: string) {
   margin: 0 auto;
   padding: 0 16px 60px;
 }
+
+/* Tabs */
+.settings-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0;
+}
+.tab {
+  padding: 10px 20px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text2);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+  margin-bottom: -1px;
+}
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.tab:hover:not(.active) { color: var(--text1); }
+
+/* Library */
+.library-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--bg);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  color: var(--text2);
+}
+.library-summary b { color: var(--accent); }
+.btn-add-all-global {
+  padding: 8px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.btn-add-all-global:hover { opacity: .85; }
+
+.library-chapter { margin-bottom: 20px; }
+.library-chapter-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+.library-lessons { display: flex; flex-direction: column; gap: 6px; }
+.library-lesson {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: 8px;
+}
+.library-lesson-info { flex: 1; display: flex; align-items: center; gap: 8px; min-width: 0; }
+.library-lesson-name {
+  font-size: 0.85rem;
+  color: var(--text1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.library-lesson-count {
+  font-size: 0.75rem;
+  border-radius: 10px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+.count-done { background: rgba(34,197,94,.15); color: var(--green); }
+.count-partial { background: var(--border); color: var(--text2); }
+.btn-lesson-add {
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--accent2);
+  background: transparent;
+  color: var(--accent2);
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s;
+}
+.btn-lesson-add:hover:not(:disabled) { background: rgba(139,92,246,.12); }
+.btn-lesson-add:disabled { opacity: .5; cursor: default; }
+.lesson-done-badge { color: var(--green); font-size: 0.85rem; }
+.lesson-no-vocab { color: var(--border); font-size: 0.78rem; }
 
 .settings-section {
   background: var(--surface);

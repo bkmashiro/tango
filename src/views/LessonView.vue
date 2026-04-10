@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { loadData, getLesson, lessons } from '../stores/data'
-import { markSectionRead, getLessonProgress, db, vocabId } from '../stores/db'
+import { markSectionRead, getLessonProgress, db, vocabId, bulkAddVocab } from '../stores/db'
 import type { VocabItem, SectionStatus } from '../types'
 import LessonBlock from '../components/blocks/LessonBlock.vue'
 import BlockExercises from '../components/blocks/BlockExercises.vue'
@@ -72,6 +72,25 @@ async function addToSRS(item: VocabItem) {
   addedWords.value = next
 }
 
+async function addSectionVocab(sectionIdx: number) {
+  const sec = lesson.value?.sections[sectionIdx]
+  if (!sec?.vocab?.length) return
+  const words = sec.vocab.map(v => v.word)
+  await bulkAddVocab(lessonId.value, words)
+  const next = new Set(addedWords.value)
+  words.forEach(w => next.add(w))
+  addedWords.value = next
+}
+
+function sectionVocabCount(sectionIdx: number) {
+  return lesson.value?.sections[sectionIdx]?.vocab?.length ?? 0
+}
+
+function sectionVocabAddedCount(sectionIdx: number) {
+  const vocab = lesson.value?.sections[sectionIdx]?.vocab ?? []
+  return vocab.filter(v => addedWords.value.has(v.word)).length
+}
+
 function scrollToSection(i: number) {
   const el = document.getElementById(`section-${i}`)
   if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -119,7 +138,7 @@ function scrollToSection(i: number) {
           @addToSRS="addToSRS"
         />
 
-        <div class="section-footer">
+        <div v-if="sec.title" class="section-footer">
           <button
             v-if="!sectionStatuses[i] || sectionStatuses[i] === 'unread'"
             class="btn-read"
@@ -128,6 +147,21 @@ function scrollToSection(i: number) {
             ✓ 已读
           </button>
           <span v-else class="read-badge">✓ 已读</span>
+
+          <button
+            v-if="sectionVocabCount(i) > 0 && sectionVocabAddedCount(i) < sectionVocabCount(i)"
+            class="btn-add-all"
+            @click="addSectionVocab(i)"
+          >
+            + 加入本节全部词汇
+            <span class="btn-add-all-count">
+              {{ sectionVocabAddedCount(i) }}/{{ sectionVocabCount(i) }}
+            </span>
+          </button>
+          <span
+            v-else-if="sectionVocabCount(i) > 0"
+            class="added-badge"
+          >✓ 已全部加入 ({{ sectionVocabCount(i) }})</span>
         </div>
       </section>
 
