@@ -380,3 +380,30 @@ rt { font-size: 0.55em; color: var(--accent2); }
 /* ── Inline styles ────────────────────────────────────────────────── */
 .inlines strong { color: var(--text); }
 .inlines em     { color: var(--text2); font-style: italic; }
+
+/* ── Audio button ─────────────────────────────────────────────────── */
+.audio-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  padding: 0.1em 0.2em;
+  border-radius: 3px;
+  transition: background 0.15s;
+}
+.audio-btn:hover {
+  background: var(--accent-dim, rgba(99,179,237,0.15));
+}
+
+/* ── Credits footer ───────────────────────────────────────────────── */
+.credits {
+  margin-top: 48px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text2);
+  line-height: 1.8;
+}

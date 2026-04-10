@@ -6,10 +6,11 @@ export type InlineItalic    = { type: 'italic';    content: string }
 export type InlineUnderline = { type: 'underline'; content: string }
 export type InlineLink      = { type: 'link';      content: string; href: string }
 export type InlineBr        = { type: 'br' }
+export type InlineAudio     = { type: 'audio'; key: string; text: string }
 
 export type Inline =
   | InlineText | InlineRuby | InlineBold
-  | InlineItalic | InlineUnderline | InlineLink | InlineBr
+  | InlineItalic | InlineUnderline | InlineLink | InlineBr | InlineAudio
 
 // ── Vocab ──────────────────────────────────────────────────────────────
 export interface VocabItem {

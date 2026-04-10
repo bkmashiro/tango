@@ -2,6 +2,11 @@
 import type { Inline } from '../../types'
 
 defineProps<{ inlines: Inline[] }>()
+
+function playAudio(key: string) {
+  const audio = new Audio(import.meta.env.BASE_URL + 'audio/' + key + '.mp3')
+  audio.play()
+}
 </script>
 
 <template>
@@ -26,6 +31,9 @@ defineProps<{ inlines: Inline[] }>()
         target="_blank"
         rel="noopener"
       >{{ token.content }}</a>
+      <button v-else-if="token.type === 'audio'" class="audio-btn" @click.stop="playAudio(token.key)">
+        {{ token.text }}
+      </button>
     </template>
   </span>
 </template>

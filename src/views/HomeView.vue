@@ -55,5 +55,10 @@ onMounted(async () => {
         </div>
       </section>
     </main>
+
+    <footer class="credits">
+      <p>基于 <a href="http://www.guidetojapanese.org/learn/grammar" target="_blank" rel="noopener">Tae Kim's Japanese Grammar Guide</a>（CC BY-NC-SA 2.5）</p>
+      <p>中文版整理自 <a href="https://github.com/pizzamx/jpgramma" target="_blank" rel="noopener">pizzamx/jpgramma</a></p>
+    </footer>
   </div>
 </template>
