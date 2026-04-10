@@ -1,0 +1,1 @@
+var e={reviewLimit:30,ttsRate:1,ttsPitch:1,autoReveal:!1},t=`tango-settings`;function n(){try{let n=localStorage.getItem(t);if(n)return{...e,...JSON.parse(n)}}catch{}return{...e}}function r(e){localStorage.setItem(t,JSON.stringify(e))}function i(e){return n()[e]}export{n,r,i as t};
