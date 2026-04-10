@@ -209,6 +209,17 @@ async function respond(isCorrect: boolean) {
   goForward()
 }
 
+/** Mark wrong AND push card back to end of queue so it appears again this session. */
+async function respondHard() {
+  if (!card.value) return
+  const requeued = { ...card.value }
+  history.value.push({ word: card.value.word, lessonId: card.value.lessonId })
+  await recordVocabResult(card.value.lessonId, card.value.word, false)
+  // Add to end before goForward so the done-check sees the updated length
+  queue.value = [...queue.value, requeued]
+  goForward()
+}
+
 function goForward() {
   transitionName.value = 'slide-left'
   const leavingKey = cardKey.value
@@ -367,6 +378,7 @@ function handleKey(e: KeyboardEvent) {
                       <button class="btn-wrong"   @click="respond(false)">✗ 忘了 <kbd>←</kbd></button>
                       <button class="btn-correct" @click="respond(true)">✓ 记得 <kbd>→</kbd></button>
                     </div>
+                    <button class="btn-hard" @click="respondHard">一点也不会，再来一次</button>
                   </div>
                 </Transition>
               </div>
@@ -764,6 +776,19 @@ function handleKey(e: KeyboardEvent) {
 .btn-correct { background: rgba(34,197,94,.15);  color: var(--green); }
 .btn-wrong:hover   { background: rgba(239,68,68,.28); }
 .btn-correct:hover { background: rgba(34,197,94,.28); }
+
+.btn-hard {
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: color .15s;
+  margin-top: 2px;
+}
+.btn-hard:hover { color: var(--red); }
 
 /* Keyboard hint */
 kbd {
