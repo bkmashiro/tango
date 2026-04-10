@@ -237,21 +237,28 @@ button { cursor: pointer; font-family: inherit; }
 /* Examples */
 .block-examples { list-style: none; display: flex; flex-direction: column; gap: 6px; margin: 1em 0; }
 .example-item {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 10px 14px;
-  cursor: pointer;
-  transition: border-color .12s;
-  display: grid;
-  grid-template-rows: auto auto;
-  gap: 4px;
+  padding: 9px 14px;
 }
-.example-item:hover { border-color: var(--accent); }
-.example-item.clickable { cursor: pointer; }
-.example-item:not(.clickable) { cursor: default; }
-.example-jp { font-family: var(--font-jp); font-size: 1.05rem; line-height: 1.6; }
-.example-zh { font-size: 0.85rem; color: var(--green); }
+.example-jp {
+  flex: 1;
+  font-family: var(--font-jp);
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+.example-zh {
+  flex-shrink: 0;
+  max-width: 46%;
+  font-size: 0.78rem;
+  color: var(--text2);
+  text-align: right;
+  line-height: 1.5;
+}
 .reveal-hint { font-size: 0.72rem; color: var(--text2); font-style: italic; }
 
 /* Sumbox */
