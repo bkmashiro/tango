@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, computed } from 'vue'
+import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { loadData, getLesson, lessons } from '../stores/data'
 import { getDueVocab, recordVocabResult } from '../stores/db'
@@ -64,6 +64,27 @@ function lookupVocab(vp: VocabProgress | null) {
 }
 
 const vocabData = computed(() => lookupVocab(card.value))
+
+// ── Reading display & TTS toggles ──────────────────────────────────────────
+const showReading = ref(localStorage.getItem('tango_show_reading') !== 'false')
+const autoRead    = ref(localStorage.getItem('tango_auto_read') === 'true')
+
+watch(showReading, v => localStorage.setItem('tango_show_reading', String(v)))
+watch(autoRead,    v => localStorage.setItem('tango_auto_read',    String(v)))
+
+function speak() {
+  if (!card.value) return
+  const word = vocabData.value?.word ?? normalizeWord(card.value.word)
+  if (!word) return
+  const utt  = new SpeechSynthesisUtterance(word)
+  utt.lang   = 'ja-JP'
+  utt.rate   = 0.9
+  speechSynthesis.cancel()
+  speechSynthesis.speak(utt)
+}
+
+// Auto-read when card changes (cardKey changes)
+watch(cardKey, () => { if (autoRead.value && !done.value) speak() })
 
 const deckLabel = computed(() => {
   if (deck.value === 'favorites') return '⭐ 收藏夹'
@@ -269,6 +290,16 @@ function handleKey(e: KeyboardEvent) {
       <button class="deck-btn" :class="{ active: deck === 'library' }"   @click="switchDeck('library')">📚 学习库</button>
     </div>
 
+    <!-- Feature toggles -->
+    <div class="feature-toggles">
+      <button class="toggle-btn" :class="{ active: autoRead }" @click="autoRead = !autoRead" title="自动朗读">
+        🔊 朗读
+      </button>
+      <button class="toggle-btn" :class="{ active: !showReading }" @click="showReading = !showReading" title="隐藏注音以训练记忆">
+        {{ showReading ? '👁 注音' : '🙈 注音' }}
+      </button>
+    </div>
+
     <!-- Done screen -->
     <div v-if="done" class="review-done">
       <div class="done-emoji">🎉</div>
@@ -303,9 +334,15 @@ function handleKey(e: KeyboardEvent) {
         <div class="card-wrap">
           <Transition :name="transitionName">
             <div class="flash-card" :key="cardKey" :class="{ 'quick-peek': quickPeeked }">
-              <div class="card-word">{{ vocabData?.word ?? normalizeWord(card.word) }}</div>
-              <div v-if="vocabData?.reading_display" class="card-reading">
+              <div class="card-word-row">
+                <div class="card-word">{{ vocabData?.word ?? normalizeWord(card.word) }}</div>
+                <button class="btn-speak" @click="speak" title="朗读">🔊</button>
+              </div>
+              <div v-if="vocabData?.reading_display && (showReading || phase === 'answer')" class="card-reading">
                 {{ vocabData.reading_display }}
+              </div>
+              <div v-else-if="vocabData?.reading_display && !showReading && phase === 'question'" class="card-reading card-reading-hidden">
+                ···
               </div>
 
               <!-- Body: fixed height so card doesn't jump between phases -->
@@ -395,6 +432,26 @@ function handleKey(e: KeyboardEvent) {
 }
 .btn-back:hover { color: var(--text1); }
 .review-progress { font-size: 0.85rem; color: var(--text2); }
+
+/* Feature toggles */
+.feature-toggles {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  justify-content: center;
+}
+.toggle-btn {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all .15s;
+}
+.toggle-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.toggle-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
 
 /* Deck selector */
 .deck-selector {
@@ -570,6 +627,12 @@ function handleKey(e: KeyboardEvent) {
   box-shadow: 0 4px 32px rgba(139,92,246,.3);
 }
 
+.card-word-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
 .card-word {
   font-family: var(--font-jp);
   font-size: clamp(2rem, 10vw, 3.5rem);
@@ -579,11 +642,29 @@ function handleKey(e: KeyboardEvent) {
   word-break: break-word;
   overflow-wrap: break-word;
 }
+.btn-speak {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  opacity: 0.4;
+  padding: 4px;
+  border-radius: 6px;
+  transition: opacity .15s;
+  line-height: 1;
+  align-self: flex-end;
+  margin-bottom: 4px;
+}
+.btn-speak:hover { opacity: 0.9; }
 .card-reading {
   font-family: var(--font-jp);
   font-size: 1rem;
   color: var(--text2);
   margin-top: -6px;
+}
+.card-reading-hidden {
+  opacity: 0.25;
+  letter-spacing: .2em;
 }
 
 /* Fixed-height body prevents card from jumping when phase changes */
