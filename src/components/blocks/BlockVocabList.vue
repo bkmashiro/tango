@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { BlockVocabList, VocabItem } from '../../types'
 
-defineProps<{ block: BlockVocabList }>()
+const props = defineProps<{ block: BlockVocabList; addedWords?: Set<string> }>()
 const emit = defineEmits<{ addToSRS: [item: VocabItem] }>()
 
 const added = ref<Set<string>>(new Set())
+
+// Sync when parent finishes loading DB words
+watch(() => props.addedWords, (val) => {
+  if (val && val.size > 0) added.value = new Set(val)
+}, { immediate: true })
 
 function onAdd(item: VocabItem) {
   if (added.value.has(item.word)) return

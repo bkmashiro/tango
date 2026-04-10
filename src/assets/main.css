@@ -251,9 +251,8 @@ button { cursor: pointer; font-family: inherit; }
 .example-item.clickable { cursor: pointer; }
 .example-item:not(.clickable) { cursor: default; }
 .example-jp { font-family: var(--font-jp); font-size: 1.05rem; line-height: 1.6; }
-.example-zh { font-size: 0.85rem; color: var(--green); transition: opacity .2s; }
-.example-zh.hidden { opacity: 0; filter: blur(4px); }
-.reveal-hint { font-size: 0.72rem; color: var(--text2); }
+.example-zh { font-size: 0.85rem; color: var(--green); }
+.reveal-hint { font-size: 0.72rem; color: var(--text2); font-style: italic; }
 
 /* Sumbox */
 .block-sumbox {
@@ -396,6 +395,72 @@ rt { font-size: 0.55em; color: var(--accent2); }
 .audio-btn:hover {
   background: var(--accent-dim, rgba(99,179,237,0.15));
 }
+
+/* ── Continue banner ──────────────────────────────────────────────── */
+.continue-banner {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 20px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.continue-banner:hover { border-color: var(--accent2); }
+.continue-icon { font-size: 1.4rem; }
+.continue-text { flex: 1; }
+.continue-label { font-size: 0.72rem; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+.continue-title { font-weight: 600; font-size: 0.95rem; }
+.continue-arrow { color: var(--accent2); font-size: 1.2rem; }
+
+/* ── Lesson card progress ─────────────────────────────────────────── */
+.lesson-progress-bar {
+  height: 2px;
+  background: var(--border);
+  border-radius: 99px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.lesson-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 99px;
+  transition: width .3s;
+}
+.lesson-progress-text {
+  font-size: 0.68rem;
+  color: var(--accent2);
+  margin-top: 4px;
+}
+
+/* ── Lesson pagination ────────────────────────────────────────────── */
+.lesson-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.btn-page {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 0.88rem;
+  max-width: 48%;
+  text-align: left;
+  transition: border-color .15s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.btn-page:hover { border-color: var(--accent); color: var(--accent2); }
+.btn-next { text-align: right; }
+.btn-page-placeholder { flex: 1; }
 
 /* ── Credits footer ───────────────────────────────────────────────── */
 .credits {

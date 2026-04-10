@@ -1,17 +1,73 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { loadData, chapters, getLessonsForChapter, meta } from '../stores/data'
+import { loadData, chapters, getLessonsForChapter, meta, getLesson } from '../stores/data'
 import { db } from '../stores/db'
 
 const router = useRouter()
 const dueCount = ref(0)
+const lastLesson = ref<string | null>(null)
+const lastLessonTitle = ref<string>('')
+
+// Per-lesson progress: { [lessonId]: { sectionsRead: N, totalSections: N, vocabAdded: N, totalVocab: N } }
+type LessonProg = { sectionsRead: number; totalSections: number; vocabAdded: number; totalVocab: number }
+const lessonProgress = ref<Record<string, LessonProg>>({})
 
 onMounted(async () => {
   await loadData()
+
   dueCount.value = await db.vocabProgress
     .where('nextReview').belowOrEqual(Date.now()).count()
+
+  // Last lesson
+  const last = localStorage.getItem('lastLesson')
+  if (last) {
+    const l = getLesson(last)
+    if (l) {
+      lastLesson.value = last
+      lastLessonTitle.value = l.title
+    }
+  }
+
+  // Load all progress in two queries
+  const [allSections, allVocab] = await Promise.all([
+    db.sectionProgress.toArray(),
+    db.vocabProgress.toArray(),
+  ])
+
+  // Count by lessonId
+  const secByLesson: Record<string, number> = {}
+  for (const s of allSections) {
+    if (s.status === 'read' || s.status === 'reviewing') {
+      secByLesson[s.lessonId] = (secByLesson[s.lessonId] ?? 0) + 1
+    }
+  }
+  const vocabByLesson: Record<string, number> = {}
+  for (const v of allVocab) {
+    vocabByLesson[v.lessonId] = (vocabByLesson[v.lessonId] ?? 0) + 1
+  }
+
+  // Build progress map for all lessons
+  for (const ch of chapters.value) {
+    for (const lid of ch.lessons) {
+      const l = getLesson(lid)
+      if (!l) continue
+      lessonProgress.value[lid] = {
+        sectionsRead: secByLesson[lid] ?? 0,
+        totalSections: l.sections.length,
+        vocabAdded: vocabByLesson[lid] ?? 0,
+        totalVocab: l.totalVocab,
+      }
+    }
+  }
 })
+
+function progressPct(p: LessonProg) {
+  const total = p.totalSections + Math.min(p.totalVocab, 10)
+  if (total === 0) return 0
+  const done = p.sectionsRead + Math.min(p.vocabAdded, 10)
+  return Math.round((done / total) * 100)
+}
 </script>
 
 <template>
@@ -25,6 +81,15 @@ onMounted(async () => {
         <span class="badge">{{ meta.totalExamples }} 例句</span>
       </div>
     </header>
+
+    <div v-if="lastLesson" class="continue-banner" @click="router.push(`/lesson/${lastLesson}`)">
+      <span class="continue-icon">📖</span>
+      <div class="continue-text">
+        <div class="continue-label">继续学习</div>
+        <div class="continue-title">{{ lastLessonTitle }}</div>
+      </div>
+      <span class="continue-arrow">→</span>
+    </div>
 
     <div v-if="dueCount > 0" class="review-banner" @click="router.push('/review')">
       <span class="review-fire">🔥</span>
@@ -51,6 +116,22 @@ onMounted(async () => {
               <span>{{ lesson.totalVocab }} 词</span>
               <span>{{ lesson.totalExamples }} 例</span>
             </div>
+            <template v-if="lessonProgress[lesson.id] && (lessonProgress[lesson.id].sectionsRead > 0 || lessonProgress[lesson.id].vocabAdded > 0)">
+              <div class="lesson-progress-bar">
+                <div
+                  class="lesson-progress-fill"
+                  :style="{ width: progressPct(lessonProgress[lesson.id]) + '%' }"
+                />
+              </div>
+              <div class="lesson-progress-text">
+                <span v-if="lessonProgress[lesson.id].sectionsRead > 0">
+                  {{ lessonProgress[lesson.id].sectionsRead }}/{{ lessonProgress[lesson.id].totalSections }} 节已读
+                </span>
+                <span v-if="lessonProgress[lesson.id].vocabAdded > 0">
+                  · {{ lessonProgress[lesson.id].vocabAdded }} 词已加
+                </span>
+              </div>
+            </template>
           </div>
         </div>
       </section>

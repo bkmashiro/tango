@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { loadData, getLesson } from '../stores/data'
+import { loadData, getLesson, lessons } from '../stores/data'
 import { markSectionRead, getLessonProgress, db, vocabId } from '../stores/db'
 import type { VocabItem, SectionStatus } from '../types'
 import LessonBlock from '../components/blocks/LessonBlock.vue'
@@ -15,16 +15,39 @@ const lesson   = computed(() => getLesson(lessonId.value))
 const sectionStatuses = ref<Record<string, SectionStatus>>({})
 const addedWords      = ref<Set<string>>(new Set())
 
-onMounted(async () => {
-  await loadData()
+// Prev / Next lesson
+const allLessons = computed(() => lessons.value)
+const currentIdx = computed(() => allLessons.value.findIndex(l => l.id === lessonId.value))
+const prevLesson = computed(() => currentIdx.value > 0 ? allLessons.value[currentIdx.value - 1] : null)
+const nextLesson = computed(() => currentIdx.value >= 0 && currentIdx.value < allLessons.value.length - 1
+  ? allLessons.value[currentIdx.value + 1] : null)
+
+async function loadProgress() {
+  sectionStatuses.value = {}
   const progress = await getLessonProgress(lessonId.value)
   for (const p of progress) {
     sectionStatuses.value[p.sectionIndex] = p.status
   }
-  // Load already-added words
   const vocab = await db.vocabProgress
     .where('lessonId').equals(lessonId.value).toArray()
-  for (const v of vocab) addedWords.value.add(v.word)
+  const next = new Set<string>()
+  for (const v of vocab) next.add(v.word)
+  addedWords.value = next
+}
+
+onMounted(async () => {
+  await loadData()
+  await loadProgress()
+  // Save last visited lesson
+  localStorage.setItem('lastLesson', lessonId.value)
+})
+
+// Reload progress when lesson changes (router navigation)
+watch(lessonId, async () => {
+  await loadData()
+  await loadProgress()
+  localStorage.setItem('lastLesson', lessonId.value)
+  window.scrollTo(0, 0)
 })
 
 async function onSectionRead(idx: number) {
@@ -43,7 +66,14 @@ async function addToSRS(item: VocabItem) {
     interval: 1,
     nextReview: Date.now(),
   })
-  addedWords.value.add(item.word)
+  const next = new Set(addedWords.value)
+  next.add(item.word)
+  addedWords.value = next
+}
+
+function scrollToSection(i: number) {
+  const el = document.getElementById(`section-${i}`)
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 </script>
 
@@ -59,9 +89,10 @@ async function addToSRS(item: VocabItem) {
       <a
         v-for="(sec, i) in lesson.sections"
         :key="i"
-        :href="`#section-${i}`"
+        href="#"
         class="toc-item"
         :class="sectionStatuses[i]"
+        @click.prevent="scrollToSection(i)"
       >
         <span class="toc-dot" />
         <span class="toc-label">{{ sec.title ?? '概述' }}</span>
@@ -83,6 +114,7 @@ async function addToSRS(item: VocabItem) {
           v-for="(block, bi) in sec.blocks"
           :key="bi"
           :block="block"
+          :added-words="addedWords"
           @addToSRS="addToSRS"
         />
 
@@ -97,6 +129,26 @@ async function addToSRS(item: VocabItem) {
           <span v-else class="read-badge">✓ 已读</span>
         </div>
       </section>
+
+      <!-- Prev / Next navigation -->
+      <nav class="lesson-pagination">
+        <button
+          v-if="prevLesson"
+          class="btn-page btn-prev"
+          @click="router.push(`/lesson/${prevLesson.id}`)"
+        >
+          ← {{ prevLesson.title }}
+        </button>
+        <span v-else class="btn-page-placeholder" />
+        <button
+          v-if="nextLesson"
+          class="btn-page btn-next"
+          @click="router.push(`/lesson/${nextLesson.id}`)"
+        >
+          {{ nextLesson.title }} →
+        </button>
+        <span v-else class="btn-page-placeholder" />
+      </nav>
     </main>
   </div>
 
