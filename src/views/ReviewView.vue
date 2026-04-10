@@ -598,6 +598,7 @@ function handleKey(e: KeyboardEvent) {
   gap: 10px;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: center;
 }
 .btn-reveal {
   padding: 12px 24px;
