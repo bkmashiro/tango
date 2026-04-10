@@ -58,7 +58,7 @@ export function vocabId(lessonId: string, word: string) {
 export async function bulkAddVocab(lessonId: string, words: string[]) {
   const now = Date.now()
   await db.transaction('rw', db.vocabProgress, async () => {
-    for (const word of words) {
+    for (const word of words.filter(w => !!w)) {
       const id = vocabId(lessonId, word)
       const existing = await db.vocabProgress.get(id)
       if (!existing) {

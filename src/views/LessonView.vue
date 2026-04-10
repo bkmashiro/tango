@@ -57,7 +57,7 @@ async function onSectionRead(idx: number) {
   // Auto-add this section's vocab to the library deck
   const sec = lesson.value?.sections[idx]
   if (sec?.vocab?.length) {
-    const words = sec.vocab.map(v => v.word)
+    const words = sec.vocab.map(v => v.word).filter(Boolean)
     await bulkAddVocab(lessonId.value, words)
     const next = new Set(addedWords.value)
     words.forEach(w => next.add(w))

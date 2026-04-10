@@ -156,7 +156,7 @@ function lessonAddedCount(lessonId: string) {
   return addedLessonVocab.value[lessonId]?.size ?? 0
 }
 function lessonTotalVocab(lessonId: string) {
-  return getLesson(lessonId)?.sections.reduce((s, sec) => s + sec.vocab.length, 0) ?? 0
+  return getLesson(lessonId)?.sections.reduce((s, sec) => s + sec.vocab.filter(v => !!v.word).length, 0) ?? 0
 }
 function lessonFullyAdded(lessonId: string) {
   return lessonAddedCount(lessonId) >= lessonTotalVocab(lessonId) && lessonTotalVocab(lessonId) > 0
@@ -168,7 +168,7 @@ async function addLessonVocab(lessonId: string) {
   const lesson = getLesson(lessonId)
   if (!lesson) return
   addingLesson.value = lessonId
-  const words = lesson.sections.flatMap(s => s.vocab.map(v => v.word))
+  const words = lesson.sections.flatMap(s => s.vocab.map(v => v.word).filter(Boolean))
   await bulkAddVocab(lessonId, words)
   // refresh
   const v = await db.vocabProgress.toArray()
