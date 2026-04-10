@@ -4,8 +4,11 @@ import type { Inline } from '../../types'
 defineProps<{ inlines: Inline[] }>()
 
 function playAudio(key: string) {
-  const audio = new Audio(import.meta.env.BASE_URL + 'audio/' + key + '.mp3')
-  audio.play()
+  const base = import.meta.env.BASE_URL + 'audio/' + key
+  const audio = new Audio(base + '.mp3')
+  audio.play().catch(() => {
+    new Audio(base + '.ogg').play().catch(() => {})
+  })
 }
 </script>
 

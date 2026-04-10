@@ -38,7 +38,7 @@ const toggle = (key: string, zh: string) => {
             </span>
             <template v-if="hasZh(ex.zh)">
               <span v-if="revealed.has(`${ri}-${ei}`)" class="example-zh">{{ ex.zh }}</span>
-              <span v-else class="reveal-hint">点击查看翻译</span>
+              <span v-else class="reveal-hint">点击展开</span>
             </template>
           </li>
         </ol>

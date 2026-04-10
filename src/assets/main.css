@@ -396,6 +396,52 @@ rt { font-size: 0.55em; color: var(--accent2); }
   background: var(--accent-dim, rgba(99,179,237,0.15));
 }
 
+/* ── Global progress ──────────────────────────────────────────────── */
+.global-progress {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 14px;
+}
+.global-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.global-progress-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.global-progress-pct {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent2);
+}
+.global-progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.global-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 99px;
+  transition: width .5s ease;
+}
+.global-progress-stats {
+  display: flex;
+  gap: 20px;
+  font-size: 0.75rem;
+  color: var(--text2);
+}
+
 /* ── Continue banner ──────────────────────────────────────────────── */
 .continue-banner {
   display: flex; align-items: center; gap: 12px;
@@ -472,3 +518,14 @@ rt { font-size: 0.55em; color: var(--accent2); }
   color: var(--text2);
   line-height: 1.8;
 }
+.credits-repo {
+  margin-top: 6px;
+}
+.credits-repo a {
+  color: var(--text2);
+  font-family: monospace;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  transition: opacity .15s;
+}
+.credits-repo a:hover { opacity: 1; }
