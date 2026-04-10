@@ -1,22 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { BlockExamples } from '../../types'
 import InlineRenderer from './InlineRenderer.vue'
 
-defineProps<{ block: BlockExamples }>()
+const props = defineProps<{ block: BlockExamples }>()
 
-// Each example has its own revealed state
+// Filter out non-Japanese items (external links, English-only text, etc.)
+const isJapanese = (s: string) => /[\u3040-\u30ff\u4e00-\u9fff]/.test(s)
+const items = computed(() => props.block.items.filter(ex => isJapanese(ex.jp)))
+
+// Reassign Set on mutation so Vue tracks the change
 const revealed = ref<Set<number>>(new Set())
 const toggle = (i: number) => {
-  if (revealed.value.has(i)) revealed.value.delete(i)
-  else revealed.value.add(i)
+  const next = new Set(revealed.value)
+  if (next.has(i)) next.delete(i)
+  else next.add(i)
+  revealed.value = next
 }
 </script>
 
 <template>
-  <ol class="block-examples">
+  <ol v-if="items.length" class="block-examples">
     <li
-      v-for="(ex, i) in block.items"
+      v-for="(ex, i) in items"
       :key="i"
       class="example-item"
       @click="toggle(i)"
@@ -25,10 +31,7 @@ const toggle = (i: number) => {
         <InlineRenderer v-if="ex.inlines.length" :inlines="ex.inlines" />
         <template v-else>{{ ex.jp }}</template>
       </span>
-      <span
-        class="example-zh"
-        :class="{ hidden: !revealed.has(i) }"
-      >
+      <span class="example-zh" :class="{ hidden: !revealed.has(i) }">
         {{ ex.zh || '　' }}
       </span>
       <span v-if="!revealed.has(i)" class="reveal-hint">点击查看</span>
