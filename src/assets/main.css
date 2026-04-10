@@ -232,6 +232,7 @@ button { cursor: pointer; font-family: inherit; }
   transition: border-color .12s, color .12s;
 }
 .vocab-add:hover { border-color: var(--green); color: var(--green); }
+.vocab-add.added { border-color: var(--green); color: var(--green); cursor: default; }
 
 /* Examples */
 .block-examples { list-style: none; display: flex; flex-direction: column; gap: 6px; margin: 1em 0; }

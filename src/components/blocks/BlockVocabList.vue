@@ -1,8 +1,19 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { BlockVocabList, VocabItem } from '../../types'
 
 defineProps<{ block: BlockVocabList }>()
 const emit = defineEmits<{ addToSRS: [item: VocabItem] }>()
+
+const added = ref<Set<string>>(new Set())
+
+function onAdd(item: VocabItem) {
+  if (added.value.has(item.word)) return
+  emit('addToSRS', item)
+  const next = new Set(added.value)
+  next.add(item.word)
+  added.value = next
+}
 </script>
 
 <template>
@@ -17,7 +28,14 @@ const emit = defineEmits<{ addToSRS: [item: VocabItem] }>()
         <span v-if="item.type" class="vocab-type">{{ item.type }}</span>
         <span class="vocab-sep">—</span>
         <span class="vocab-meaning">{{ item.meaning }}</span>
-        <button class="vocab-add" @click="emit('addToSRS', item)" title="加入复习">＋</button>
+        <button
+          class="vocab-add"
+          :class="{ added: added.has(item.word) }"
+          :title="added.has(item.word) ? '已加入复习' : '加入单词复习'"
+          @click="onAdd(item)"
+        >
+          {{ added.has(item.word) ? '✓' : '＋' }}
+        </button>
       </li>
     </ul>
   </div>
