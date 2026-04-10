@@ -718,10 +718,14 @@ kbd {
 .phase-fade-enter-from,
 .phase-fade-leave-to     { opacity: 0; }
 
-/* Slide transitions */
+/* Slide transitions
+   Only the LEAVING card goes absolute so the ENTERING card stays in-flow
+   and card-wrap height is always determined by real content. */
 .slide-left-enter-active,
+.slide-right-enter-active {
+  transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .26s ease;
+}
 .slide-left-leave-active,
-.slide-right-enter-active,
 .slide-right-leave-active {
   transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .26s ease;
   position: absolute;
