@@ -595,13 +595,15 @@ function handleKey(e: KeyboardEvent) {
 
 .card-actions {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  gap: 8px;
+  width: 100%;
 }
 .btn-reveal {
-  padding: 12px 24px;
+  padding: 12px 0;
+  width: 100%;
+  max-width: 240px;
   background: var(--accent);
   color: #fff;
   border: none;
@@ -611,25 +613,25 @@ function handleKey(e: KeyboardEvent) {
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   transition: opacity .15s;
 }
 .btn-reveal:hover { opacity: .85; }
 
 .btn-quick-skip {
-  padding: 8px 14px;
+  padding: 0;
   background: transparent;
-  color: var(--accent2);
-  border: 1px solid var(--accent2);
-  border-radius: 8px;
-  font-size: 0.82rem;
+  color: var(--text2);
+  border: none;
+  font-size: 0.8rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 5px;
-  transition: background .15s;
+  transition: color .15s;
 }
-.btn-quick-skip:hover { background: rgba(139,92,246,.12); }
+.btn-quick-skip:hover { color: var(--accent2); }
 
 .card-answer {
   display: flex;
