@@ -111,4 +111,5 @@ export interface VocabProgress {
   incorrect: number
   nextReview: number  // timestamp
   interval: number    // days
+  deck: 'library' | 'favorites'
 }

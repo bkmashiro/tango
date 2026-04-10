@@ -11,6 +11,16 @@ class TangoDB extends Dexie {
       sectionProgress: 'id, lessonId, status',
       vocabProgress:   'id, lessonId, nextReview',
     })
+    this.version(2).stores({
+      sectionProgress: 'id, lessonId, status',
+      vocabProgress:   'id, lessonId, nextReview, deck',
+    }).upgrade(tx => {
+      return tx.table('vocabProgress').toCollection().modify((record: VocabProgress) => {
+        if (!record.deck) {
+          record.deck = 'favorites'
+        }
+      })
+    })
   }
 }
 
@@ -44,7 +54,7 @@ export function vocabId(lessonId: string, word: string) {
   return `${lessonId}:${word}`
 }
 
-/** Bulk-add vocab words for a lesson, skipping ones already present. */
+/** Bulk-add vocab words for a lesson to the library deck, skipping ones already present. */
 export async function bulkAddVocab(lessonId: string, words: string[]) {
   const now = Date.now()
   await db.transaction('rw', db.vocabProgress, async () => {
@@ -56,18 +66,41 @@ export async function bulkAddVocab(lessonId: string, words: string[]) {
           id, lessonId, word,
           correct: 0, incorrect: 0,
           interval: 1, nextReview: now,
+          deck: 'library',
         })
       }
     }
   })
 }
 
-export async function getDueVocab(limit = 20) {
+export async function getDueVocab(limit = 20, deck?: 'library' | 'favorites' | 'all') {
   const now = Date.now()
+  const effectiveDeck = deck ?? 'all'
+  if (effectiveDeck === 'all') {
+    return db.vocabProgress
+      .where('nextReview').belowOrEqual(now)
+      .limit(limit)
+      .toArray()
+  }
   return db.vocabProgress
     .where('nextReview').belowOrEqual(now)
+    .filter(v => v.deck === effectiveDeck)
     .limit(limit)
     .toArray()
+}
+
+export async function getDueCountByDeck(): Promise<{ library: number; favorites: number; all: number }> {
+  const now = Date.now()
+  const due = await db.vocabProgress
+    .where('nextReview').belowOrEqual(now)
+    .toArray()
+  let library = 0
+  let favorites = 0
+  for (const v of due) {
+    if (v.deck === 'library') library++
+    else favorites++ // 'favorites' or undefined (pre-migration)
+  }
+  return { library, favorites, all: library + favorites }
 }
 
 export async function recordVocabResult(
@@ -80,6 +113,7 @@ export async function recordVocabResult(
     id, lessonId, word,
     correct: 0, incorrect: 0,
     interval: 1, nextReview: Date.now(),
+    deck: 'favorites' as const,
   }
 
   // Simple SM-2-like scheduling

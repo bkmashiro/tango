@@ -35,12 +35,12 @@ function onAdd(item: VocabItem) {
         <span class="vocab-sep">—</span>
         <span class="vocab-meaning">{{ item.meaning }}</span>
         <button
-          class="vocab-add"
-          :class="{ added: added.has(item.word) }"
-          :title="added.has(item.word) ? '已加入复习' : '加入单词复习'"
+          class="vocab-star"
+          :class="{ starred: added.has(item.word) }"
+          :title="added.has(item.word) ? '已加入收藏夹' : '加入收藏夹'"
           @click="onAdd(item)"
         >
-          {{ added.has(item.word) ? '✓' : '＋' }}
+          {{ added.has(item.word) ? '★' : '☆' }}
         </button>
       </li>
     </ul>

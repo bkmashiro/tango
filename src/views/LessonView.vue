@@ -54,6 +54,15 @@ watch(lessonId, async () => {
 async function onSectionRead(idx: number) {
   await markSectionRead(lessonId.value, idx)
   sectionStatuses.value[idx] = 'read'
+  // Auto-add this section's vocab to the library deck
+  const sec = lesson.value?.sections[idx]
+  if (sec?.vocab?.length) {
+    const words = sec.vocab.map(v => v.word)
+    await bulkAddVocab(lessonId.value, words)
+    const next = new Set(addedWords.value)
+    words.forEach(w => next.add(w))
+    addedWords.value = next
+  }
 }
 
 async function addToSRS(item: VocabItem) {
@@ -66,29 +75,15 @@ async function addToSRS(item: VocabItem) {
     correct: 0, incorrect: 0,
     interval: 1,
     nextReview: Date.now(),
+    deck: 'favorites',
   })
   const next = new Set(addedWords.value)
   next.add(item.word)
   addedWords.value = next
 }
 
-async function addSectionVocab(sectionIdx: number) {
-  const sec = lesson.value?.sections[sectionIdx]
-  if (!sec?.vocab?.length) return
-  const words = sec.vocab.map(v => v.word)
-  await bulkAddVocab(lessonId.value, words)
-  const next = new Set(addedWords.value)
-  words.forEach(w => next.add(w))
-  addedWords.value = next
-}
-
 function sectionVocabCount(sectionIdx: number) {
   return lesson.value?.sections[sectionIdx]?.vocab?.length ?? 0
-}
-
-function sectionVocabAddedCount(sectionIdx: number) {
-  const vocab = lesson.value?.sections[sectionIdx]?.vocab ?? []
-  return vocab.filter(v => addedWords.value.has(v.word)).length
 }
 
 function scrollToSection(i: number) {
@@ -148,20 +143,10 @@ function scrollToSection(i: number) {
           </button>
           <span v-else class="read-badge">✓ 已读</span>
 
-          <button
-            v-if="sectionVocabCount(i) > 0 && sectionVocabAddedCount(i) < sectionVocabCount(i)"
-            class="btn-add-all"
-            @click="addSectionVocab(i)"
-          >
-            + 加入本节全部词汇
-            <span class="btn-add-all-count">
-              {{ sectionVocabAddedCount(i) }}/{{ sectionVocabCount(i) }}
-            </span>
-          </button>
           <span
-            v-else-if="sectionVocabCount(i) > 0"
+            v-if="sectionStatuses[i] && sectionStatuses[i] !== 'unread' && sectionVocabCount(i) > 0"
             class="added-badge"
-          >✓ 已全部加入 ({{ sectionVocabCount(i) }})</span>
+          >📚 已入学习库 ({{ sectionVocabCount(i) }})</span>
         </div>
       </section>
 

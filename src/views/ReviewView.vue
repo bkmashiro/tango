@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { loadData, getLesson, lessons } from '../stores/data'
 import { getDueVocab, recordVocabResult } from '../stores/db'
 import { getSetting } from '../utils/settings'
 import type { VocabProgress } from '../types'
 
 const router = useRouter()
+const route  = useRoute()
 
 const queue   = ref<VocabProgress[]>([])
 const current = ref(0)
 const phase   = ref<'question' | 'answer'>('question')
 const done    = ref(false)
 const correct = ref(0)
+const deck    = ref<'all' | 'library' | 'favorites'>('all')
 
 const card = computed(() => queue.value[current.value])
 
@@ -55,11 +57,34 @@ const vocabData = computed(() => {
   return null
 })
 
+const deckLabel = computed(() => {
+  if (deck.value === 'favorites') return '⭐ 收藏夹'
+  if (deck.value === 'library') return '📚 学习库'
+  return '全部'
+})
+
+async function loadQueue() {
+  queue.value = await getDueVocab(getSetting('reviewLimit'), deck.value)
+  current.value = 0
+  phase.value = 'question'
+  correct.value = 0
+  done.value = queue.value.length === 0
+}
+
 onMounted(async () => {
   await loadData()
-  queue.value = await getDueVocab(getSetting('reviewLimit'))
-  done.value = queue.value.length === 0
+  // Read deck from route query
+  const queryDeck = route.query.deck as string | undefined
+  if (queryDeck === 'favorites' || queryDeck === 'library' || queryDeck === 'all') {
+    deck.value = queryDeck
+  }
+  await loadQueue()
 })
+
+async function switchDeck(newDeck: 'all' | 'library' | 'favorites') {
+  deck.value = newDeck
+  await loadQueue()
+}
 
 function showAnswer() {
   phase.value = 'answer'
@@ -78,8 +103,27 @@ async function respond(isCorrect: boolean) {
   <div class="review-view">
     <nav class="review-nav">
       <button class="btn-back" @click="router.push('/')">← 返回</button>
-      <span class="review-progress">{{ current }} / {{ queue.length }}</span>
+      <span class="review-progress">{{ deckLabel }} · {{ current }} / {{ queue.length }}</span>
     </nav>
+
+    <!-- Deck selector -->
+    <div class="deck-selector">
+      <button
+        class="deck-btn"
+        :class="{ active: deck === 'all' }"
+        @click="switchDeck('all')"
+      >全部</button>
+      <button
+        class="deck-btn"
+        :class="{ active: deck === 'favorites' }"
+        @click="switchDeck('favorites')"
+      >⭐ 收藏夹</button>
+      <button
+        class="deck-btn"
+        :class="{ active: deck === 'library' }"
+        @click="switchDeck('library')"
+      >📚 学习库</button>
+    </div>
 
     <!-- Done screen -->
     <div v-if="done" class="review-done">

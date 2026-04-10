@@ -2,10 +2,12 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { loadData, chapters, getLessonsForChapter, meta, getLesson } from '../stores/data'
-import { db } from '../stores/db'
+import { db, getDueCountByDeck } from '../stores/db'
 
 const router = useRouter()
 const dueCount = ref(0)
+const dueFavorites = ref(0)
+const dueLibrary = ref(0)
 const lastLesson = ref<string | null>(null)
 const lastLessonTitle = ref<string>('')
 
@@ -19,8 +21,10 @@ const globalProgress = ref({ sectionsRead: 0, totalSections: 0, vocabAdded: 0, t
 onMounted(async () => {
   await loadData()
 
-  dueCount.value = await db.vocabProgress
-    .where('nextReview').belowOrEqual(Date.now()).count()
+  const deckCounts = await getDueCountByDeck()
+  dueCount.value = deckCounts.all
+  dueFavorites.value = deckCounts.favorites
+  dueLibrary.value = deckCounts.library
 
   // Last lesson
   const last = localStorage.getItem('lastLesson')
@@ -126,7 +130,12 @@ function progressPct(p: LessonProg) {
 
     <div v-if="dueCount > 0" class="review-banner" @click="router.push('/review')">
       <span class="review-fire">🔥</span>
-      <span>{{ dueCount }} 个词汇待复习</span>
+      <span>
+        {{ dueCount }} 词待复习
+        <span v-if="dueFavorites > 0 || dueLibrary > 0" class="review-breakdown">
+          (⭐ {{ dueFavorites }} · 📚 {{ dueLibrary }})
+        </span>
+      </span>
       <span class="review-arrow">→</span>
     </div>
 
