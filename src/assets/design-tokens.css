@@ -1,0 +1,127 @@
+/* ── Notion Design Tokens ─────────────────────────────────────────── */
+/* Warm minimalism inspired by Notion's visual language                */
+
+/* Google Fonts: Inter + Lora */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@600;700&display=swap');
+
+:root {
+  /* ── Color Palette ─────────────────────────────────────────── */
+
+  /* Surfaces */
+  --surface-primary:   #ffffff;
+  --surface-secondary: #f6f5f4;
+  --surface-hover:     #f0efee;
+  --surface-dark:      #31302e;
+
+  /* Text */
+  --text-primary:   rgba(0, 0, 0, 0.95);
+  --text-secondary: #615d59;
+  --text-tertiary:  #a39e98;
+  --text-inverted:  #ffffff;
+
+  /* Accent / Brand */
+  --accent:          #0075de;
+  --accent-hover:    #005bab;
+  --accent-active:   #004e96;
+  --accent-bg:       #f2f9ff;
+  --accent-text:     #097fe8;
+
+  /* Semantic */
+  --color-success:      #1aae39;
+  --color-success-dark: #138533;   /* darker shade for text on light bg */
+  --color-warning:      #dd5b00;
+  --color-warning-bg:   #fffbf5;   /* warm parchment tint for note callouts */
+  --color-danger:       #c0392b;
+  --color-danger-dark:  #b52a1e;   /* darker shade for text on light bg */
+  --color-teal:         #2a9d99;
+
+  /* Borders */
+  --border-default: rgba(0, 0, 0, 0.10);
+  --border-subtle:  rgba(0, 0, 0, 0.06);
+  --border-medium:  rgba(0, 0, 0, 0.15);
+  --border-strong:  rgba(0, 0, 0, 0.22);
+
+  /* ── Typography ────────────────────────────────────────────── */
+  --font-ui:   'Inter', -apple-system, system-ui, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-heading: 'Lora', 'Inter', Georgia, serif;
+  --font-jp:   'Hiragino Kaku Gothic Pro', 'Yu Gothic', 'Noto Sans JP', sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* Type scale */
+  --text-display:    4.00rem;    /* 64px – hero */
+  --text-display-2:  3.38rem;    /* 54px */
+  --text-h1:         3.00rem;    /* 48px */
+  --text-h2:         2.50rem;    /* 40px */
+  --text-h3:         1.63rem;    /* 26px */
+  --text-h4:         1.38rem;    /* 22px */
+  --text-lg:         1.25rem;    /* 20px */
+  --text-base:       1.00rem;    /* 16px */
+  --text-sm:         0.875rem;   /* 14px */
+  --text-xs:         0.75rem;    /* 12px */
+
+  /* Letter spacing (tighten with size) */
+  --ls-display:  -2.125px;
+  --ls-display-2: -1.875px;
+  --ls-h1:       -1.5px;
+  --ls-h2:       normal;
+  --ls-h3:       -0.625px;
+  --ls-h4:       -0.25px;
+  --ls-lg:       -0.125px;
+  --ls-badge:     0.125px;
+
+  /* ── Spacing (8px base) ────────────────────────────────────── */
+  --space-1:   2px;
+  --space-2:   4px;
+  --space-3:   6px;
+  --space-4:   8px;
+  --space-5:  12px;
+  --space-6:  16px;
+  --space-7:  20px;
+  --space-8:  24px;
+  --space-9:  32px;
+  --space-10: 40px;
+  --space-11: 48px;
+  --space-12: 64px;
+  --space-13: 80px;
+
+  /* ── Border Radius ─────────────────────────────────────────── */
+  --radius-xs:   4px;    /* buttons, inputs */
+  --radius-sm:   6px;    /* small elements */
+  --radius-md:   8px;    /* small cards */
+  --radius-lg:  12px;    /* standard cards */
+  --radius-xl:  16px;    /* hero cards */
+  --radius-pill: 9999px; /* badges, pills */
+  --radius-full: 100%;   /* circles */
+
+  /* ── Shadows ───────────────────────────────────────────────── */
+  /* Soft card: 4-layer stack, max opacity 0.04 */
+  --shadow-card:
+    rgba(0, 0, 0, 0.04) 0px 4px 18px,
+    rgba(0, 0, 0, 0.027) 0px 2.025px 7.847px,
+    rgba(0, 0, 0, 0.02) 0px 0.8px 2.925px,
+    rgba(0, 0, 0, 0.01) 0px 0.175px 1.04px;
+
+  /* Deep: 5-layer, max opacity 0.05 */
+  --shadow-deep:
+    rgba(0, 0, 0, 0.01) 0px 1px 3px,
+    rgba(0, 0, 0, 0.02) 0px 3px 7px,
+    rgba(0, 0, 0, 0.02) 0px 7px 15px,
+    rgba(0, 0, 0, 0.04) 0px 14px 28px,
+    rgba(0, 0, 0, 0.05) 0px 23px 52px;
+
+  /* Hover intensification */
+  --shadow-card-hover:
+    rgba(0, 0, 0, 0.07) 0px 4px 24px,
+    rgba(0, 0, 0, 0.05) 0px 2px 10px,
+    rgba(0, 0, 0, 0.03) 0px 0.8px 3px,
+    rgba(0, 0, 0, 0.02) 0px 0.175px 1.5px;
+
+  /* ── Transitions ───────────────────────────────────────────── */
+  --transition-fast:   150ms ease;
+  --transition-base:   200ms ease;
+  --transition-slow:   300ms ease;
+
+  /* ── Layout ────────────────────────────────────────────────── */
+  --max-width: 900px;
+  --content-width: 760px;
+}

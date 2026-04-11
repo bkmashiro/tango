@@ -416,10 +416,11 @@ function handleKey(e: KeyboardEvent) {
 </template>
 
 <style scoped>
+/* ── Review View Layout ───────────────────────────────────────────── */
 .review-view {
-  max-width: 700px;
+  max-width: 680px;
   margin: 0 auto;
-  padding: 0 8px 60px;
+  padding: 0 var(--space-4) var(--space-12);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -430,107 +431,173 @@ function handleKey(e: KeyboardEvent) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 8px 8px;
+  padding: var(--space-6) var(--space-2) var(--space-4);
 }
+
 .btn-back {
   background: none;
   border: none;
-  color: var(--text2);
+  color: var(--text-tertiary);
   cursor: pointer;
-  font-size: 0.9rem;
-  padding: 6px 0;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-xs);
+  transition: color var(--transition-fast);
 }
-.btn-back:hover { color: var(--text1); }
-.review-progress { font-size: 0.85rem; color: var(--text2); }
+.btn-back:hover { color: var(--text-primary); }
 
-/* Feature toggles */
+.review-progress {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* ── Feature Toggles ──────────────────────────────────────────────── */
 .feature-toggles {
   display: flex;
-  gap: 6px;
-  margin-bottom: 16px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
   justify-content: center;
 }
-.toggle-btn {
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text2);
-  font-size: 0.78rem;
-  cursor: pointer;
-  transition: all .15s;
-}
-.toggle-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-.toggle-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
 
-/* Deck selector */
+.toggle-btn {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-default);
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.toggle-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.toggle-btn:hover:not(.active) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+/* ── Deck Selector ────────────────────────────────────────────────── */
 .deck-selector {
   display: flex;
-  gap: 6px;
-  margin-bottom: 20px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-7);
   justify-content: center;
 }
-.deck-btn {
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text2);
-  font-size: 0.82rem;
-  cursor: pointer;
-  transition: all .15s;
-}
-.deck-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-.deck-btn:hover:not(.active) { border-color: var(--accent); color: var(--accent); }
 
-/* Done */
-.review-done { text-align: center; padding: 40px 20px; }
-.done-emoji  { font-size: 3rem; margin-bottom: 12px; }
-.review-done h2 { font-size: 1.4rem; margin-bottom: 8px; }
-.review-done p  { color: var(--text2); margin-bottom: 24px; }
+.deck-btn {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-default);
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.deck-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.deck-btn:hover:not(.active) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+/* ── Done Screen ──────────────────────────────────────────────────── */
+.review-done {
+  text-align: center;
+  padding: var(--space-12) var(--space-7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+.done-emoji { font-size: 3.5rem; }
+
+.review-done h2 {
+  font-family: var(--font-heading);
+  font-size: var(--text-h3);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: var(--ls-h3);
+}
+
+.review-done p {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+.done-btns {
+  display: flex;
+  gap: var(--space-4);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+}
+
 .btn-primary {
-  padding: 12px 32px;
+  padding: var(--space-4) var(--space-9);
   background: var(--accent);
   color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
 }
-.btn-primary:hover { opacity: .85; }
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-primary:active { background: var(--accent-active); transform: scale(0.97); }
 
-.done-btns { display: flex; gap: 12px; justify-content: center; }
 .btn-secondary {
-  padding: 12px 32px;
-  background: transparent;
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  border-radius: 10px;
-  font-size: 1rem;
+  padding: var(--space-4) var(--space-9);
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xs);
+  font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
-  transition: background .15s;
+  transition: all var(--transition-fast);
 }
-.btn-secondary:hover { background: rgba(139,92,246,.1); }
+.btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
 
+/* ── Resample ─────────────────────────────────────────────────────── */
 .resample-row {
-  margin-top: 10px;
+  margin-top: var(--space-4);
   text-align: center;
 }
+
 .btn-resample {
   background: none;
   border: none;
-  color: var(--text2);
-  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+  font-weight: 500;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: color .15s;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-xs);
+  transition: color var(--transition-fast);
 }
-.btn-resample:hover { color: var(--text1); }
+.btn-resample:hover { color: var(--text-secondary); }
 
-/* Card stage */
+/* ── Card Stage ───────────────────────────────────────────────────── */
 .card-stage {
   width: 100%;
   display: flex;
@@ -541,20 +608,21 @@ function handleKey(e: KeyboardEvent) {
 .progress-bar {
   width: 100%;
   max-width: 440px;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  margin-bottom: 20px;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.07);
+  border-radius: var(--radius-pill);
+  margin-bottom: var(--space-7);
   overflow: hidden;
 }
+
 .progress-fill {
   height: 100%;
   background: var(--accent);
-  border-radius: 2px;
-  transition: width .3s ease;
+  border-radius: var(--radius-pill);
+  transition: width 0.3s ease;
 }
 
-/* Card row: ghost + main + ghost */
+/* ── Card Row (ghost + main + ghost) ──────────────────────────────── */
 .card-row {
   display: flex;
   align-items: center;
@@ -565,48 +633,50 @@ function handleKey(e: KeyboardEvent) {
   min-height: 340px;
 }
 
-.card-ghost-placeholder { width: 56px; flex-shrink: 0; }
+.card-ghost-placeholder { width: 52px; flex-shrink: 0; }
 
 .card-ghost {
-  width: 56px;
+  width: 52px;
   flex-shrink: 0;
-  height: 260px;
+  height: 240px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  gap: var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-secondary);
   overflow: hidden;
-  padding: 10px 4px;
+  padding: var(--space-4) var(--space-2);
   user-select: none;
-  transition: opacity .2s;
+  transition: opacity var(--transition-base);
 }
-.card-ghost-left  { opacity: 0.38; cursor: pointer; }
-.card-ghost-right { opacity: 0.22; cursor: default; }
-.card-ghost-left:hover { opacity: 0.6; }
+.card-ghost-left  { opacity: 0.40; cursor: pointer; }
+.card-ghost-right { opacity: 0.20; cursor: default; }
+.card-ghost-left:hover { opacity: 0.65; }
 
 .ghost-word {
   font-family: var(--font-jp);
-  font-size: 0.8rem;
-  color: var(--text1);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
   text-align: center;
   word-break: break-word;
   writing-mode: vertical-rl;
   text-orientation: mixed;
-  max-height: 180px;
+  max-height: 160px;
   overflow: hidden;
 }
+
 .ghost-label {
-  font-size: 0.55rem;
-  color: var(--text2);
+  font-size: 0.52rem;
+  color: var(--text-tertiary);
   text-align: center;
   writing-mode: horizontal-tb;
+  font-weight: 500;
 }
 
-/* Main card wrap for overflow clipping during transitions */
+/* ── Main Card Wrap ───────────────────────────────────────────────── */
 .card-wrap {
   flex: 1;
   max-width: 440px;
@@ -616,64 +686,70 @@ function handleKey(e: KeyboardEvent) {
   min-height: 300px;
 }
 
-/* Flash card */
+/* ── Flash Card ───────────────────────────────────────────────────── */
 .flash-card {
   position: relative;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 36px 24px 28px;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-10) var(--space-8) var(--space-8);
   width: 100%;
-  box-shadow: 0 4px 24px rgba(0,0,0,.18);
+  box-shadow: var(--shadow-deep);
   text-align: center;
   min-height: 300px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  transition: box-shadow .2s, border-color .2s;
+  gap: var(--space-4);
+  transition: box-shadow var(--transition-base), border-color var(--transition-base);
 }
+
 .flash-card.quick-peek {
   border-color: var(--accent);
-  box-shadow: 0 4px 32px rgba(139,92,246,.3);
+  box-shadow: 0 0 0 3px rgba(0, 117, 222, 0.12), var(--shadow-deep);
 }
 
 .card-word {
   font-family: var(--font-jp);
   font-size: clamp(2rem, 10vw, 3.5rem);
   font-weight: 700;
-  color: var(--text1);
+  color: var(--text-primary);
   line-height: 1.2;
   word-break: break-word;
   overflow-wrap: break-word;
 }
+
 .btn-speak {
   position: absolute;
-  top: 12px;
-  right: 14px;
-  background: none;
-  border: none;
-  font-size: 1rem;
+  top: var(--space-4);
+  right: var(--space-5);
+  background: var(--surface-secondary);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.9rem;
   cursor: pointer;
-  opacity: 0.3;
-  padding: 4px;
-  border-radius: 6px;
-  transition: opacity .15s;
+  opacity: 0.5;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: opacity var(--transition-fast), background var(--transition-fast);
   line-height: 1;
 }
-.btn-speak:hover { opacity: 0.85; }
+.btn-speak:hover {
+  opacity: 1;
+  background: var(--surface-hover);
+}
+
 .card-reading {
   font-family: var(--font-jp);
   font-size: 1rem;
-  color: var(--text2);
-  margin-top: -6px;
+  color: var(--text-tertiary);
+  margin-top: -4px;
 }
 .card-reading-hidden {
-  opacity: 0.25;
-  letter-spacing: .2em;
+  opacity: 0.2;
+  letter-spacing: 0.2em;
 }
 
-/* Fixed-height body prevents card from jumping when phase changes */
+/* ── Fixed-height card body ───────────────────────────────────────── */
 .card-body {
   width: 100%;
   height: 200px;
@@ -681,7 +757,7 @@ function handleKey(e: KeyboardEvent) {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 8px;
+  margin-top: var(--space-3);
   overflow: visible;
 }
 
@@ -689,145 +765,177 @@ function handleKey(e: KeyboardEvent) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: var(--space-5);
   width: 100%;
 }
-.card-mask { font-size: 2rem; color: var(--text2); letter-spacing: .2em; }
+
+.card-mask {
+  font-size: 1.75rem;
+  color: var(--text-tertiary);
+  letter-spacing: 0.2em;
+  opacity: 0.4;
+}
 
 .card-actions {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-3);
   width: 100%;
 }
+
 .btn-reveal {
-  padding: 12px 0;
+  padding: var(--space-4) 0;
   width: 100%;
   max-width: 240px;
   background: var(--accent);
   color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.95rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-xs);
+  font-size: var(--text-sm);
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: opacity .15s;
+  gap: var(--space-4);
+  transition: background var(--transition-fast), transform var(--transition-fast);
 }
-.btn-reveal:hover { opacity: .85; }
+.btn-reveal:hover { background: var(--accent-hover); }
+.btn-reveal:active { background: var(--accent-active); transform: scale(0.97); }
 
 .btn-quick-skip {
-  padding: 0;
+  padding: var(--space-2) var(--space-4);
   background: transparent;
-  color: var(--text2);
+  color: var(--text-tertiary);
   border: none;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
+  font-weight: 500;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 5px;
-  transition: color .15s;
+  gap: var(--space-2);
+  border-radius: var(--radius-xs);
+  transition: color var(--transition-fast);
 }
-.btn-quick-skip:hover { color: var(--accent2); }
+.btn-quick-skip:hover { color: var(--text-secondary); }
 
+/* ── Answer Phase ─────────────────────────────────────────────────── */
 .card-answer {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: var(--space-4);
   width: 100%;
-  margin-top: 8px;
+  margin-top: var(--space-3);
 }
-.card-meaning { font-size: 1.3rem; font-weight: 600; color: var(--text1); }
+
+.card-meaning {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
 .card-type {
-  font-size: 0.8rem;
-  color: var(--accent2);
-  background: rgba(139,92,246,.1);
-  padding: 3px 10px;
-  border-radius: 10px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--ls-badge);
+  color: var(--accent-text);
+  background: var(--accent-bg);
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-pill);
 }
 
 .card-btns {
   display: flex;
-  gap: 12px;
-  margin-top: 8px;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
   width: 100%;
 }
+
 .btn-wrong, .btn-correct {
   flex: 1;
-  padding: 14px 8px;
-  border: none;
-  border-radius: 12px;
-  font-size: 0.95rem;
+  padding: var(--space-5) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
   font-weight: 700;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: var(--space-3);
   white-space: nowrap;
-  transition: background .15s;
+  transition: background var(--transition-fast), transform var(--transition-fast);
 }
-.btn-wrong   { background: rgba(239,68,68,.15);  color: var(--red);   }
-.btn-correct { background: rgba(34,197,94,.15);  color: var(--green); }
-.btn-wrong:hover   { background: rgba(239,68,68,.28); }
-.btn-correct:hover { background: rgba(34,197,94,.28); }
+.btn-wrong {
+  background: rgba(192, 57, 43, 0.09);
+  color: var(--color-danger-dark);
+  border-color: rgba(192, 57, 43, 0.18);
+}
+.btn-correct {
+  background: rgba(26, 174, 57, 0.09);
+  color: var(--color-success-dark);
+  border-color: rgba(26, 174, 57, 0.18);
+}
+.btn-wrong:hover   { background: rgba(192, 57, 43, 0.17); }
+.btn-correct:hover { background: rgba(26, 174, 57, 0.17); }
+.btn-wrong:active, .btn-correct:active { transform: scale(0.97); }
 
 .btn-hard {
   background: none;
   border: none;
-  color: var(--text2);
-  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-size: var(--text-xs);
+  font-weight: 500;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 6px;
-  transition: color .15s;
-  margin-top: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-xs);
+  transition: color var(--transition-fast);
 }
-.btn-hard:hover { color: var(--red); }
+.btn-hard:hover { color: var(--color-danger-dark); }
 
-/* Keyboard hint */
+/* ── Keyboard Hints ───────────────────────────────────────────────── */
 kbd {
   display: inline-block;
-  font-size: 0.72em;
+  font-size: 0.70em;
   padding: 1px 5px;
-  border: 1px solid currentColor;
-  border-radius: 4px;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-xs);
   opacity: 0.55;
-  font-family: monospace;
+  font-family: var(--font-mono);
   vertical-align: middle;
   line-height: 1.4;
+  color: var(--text-secondary);
+  background: var(--surface-secondary);
 }
+
 .kbd-hint {
   display: flex;
-  gap: 16px;
-  margin-top: 14px;
-  font-size: 0.78rem;
-  color: var(--text2);
+  gap: var(--space-7);
+  margin-top: var(--space-5);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  font-weight: 500;
   justify-content: center;
   flex-wrap: wrap;
 }
 
-/* Phase fade (question ↔ answer within same card) */
+/* ── Phase Fade Transition ────────────────────────────────────────── */
 .phase-fade-enter-active,
-.phase-fade-leave-active { transition: opacity .15s ease; }
+.phase-fade-leave-active { transition: opacity 0.15s ease; }
 .phase-fade-enter-from,
 .phase-fade-leave-to     { opacity: 0; }
 
-/* Slide transitions
-   Only the LEAVING card goes absolute so the ENTERING card stays in-flow
-   and card-wrap height is always determined by real content. */
+/* ── Slide Transitions ────────────────────────────────────────────── */
 .slide-left-enter-active,
 .slide-right-enter-active {
-  transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .26s ease;
+  transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.26s ease;
 }
 .slide-left-leave-active,
 .slide-right-leave-active {
-  transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .26s ease;
+  transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.26s ease;
   position: absolute;
   width: 100%;
   top: 0;
