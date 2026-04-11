@@ -644,7 +644,7 @@ const totalVocabInData = computed(() =>
 }
 .count-done {
   background: rgba(26, 174, 57, 0.10);
-  color: #138533;
+  color: var(--color-success-dark);
 }
 .count-partial {
   background: rgba(0, 0, 0, 0.06);
@@ -671,7 +671,7 @@ const totalVocabInData = computed(() =>
 .btn-lesson-add:disabled { opacity: 0.45; cursor: default; }
 
 .lesson-done-badge {
-  color: #138533;
+  color: var(--color-success-dark);
   font-size: var(--text-sm);
   font-weight: 600;
 }
@@ -828,7 +828,7 @@ const totalVocabInData = computed(() =>
 .td-word { font-family: var(--font-jp); max-width: 180px; word-break: break-all; font-weight: 600; }
 .td-lesson { color: var(--text-tertiary); max-width: 120px; }
 .td-due { color: var(--color-danger); font-weight: 600; }
-.td-correct { color: #138533; font-weight: 600; }
+.td-correct { color: var(--color-success-dark); font-weight: 600; }
 .td-wrong { color: var(--color-danger); font-weight: 600; }
 .td-empty { text-align: center; color: var(--text-tertiary); padding: var(--space-8); }
 

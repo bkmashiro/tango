@@ -493,8 +493,8 @@ img, svg { display: block; max-width: 100%; }
   display: flex;
   gap: var(--space-4);
   align-items: flex-start;
-  background: #fffbf5;
-  border-left: 3px solid #dd5b00;
+  background: var(--color-warning-bg);
+  border-left: 3px solid var(--color-warning);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
   padding: var(--space-5) var(--space-6);
   margin: 1.25em 0;
@@ -595,8 +595,8 @@ img, svg { display: block; max-width: 100%; }
   transition: color var(--transition-fast), transform var(--transition-fast);
   line-height: 1;
 }
-.vocab-star:hover { color: #dd5b00; transform: scale(1.15); }
-.vocab-star.starred { color: #dd5b00; cursor: default; }
+.vocab-star:hover { color: var(--color-warning); transform: scale(1.15); }
+.vocab-star.starred { color: var(--color-warning); cursor: default; }
 
 /* ── Block: Examples ──────────────────────────────────────────────── */
 .block-examples {
@@ -999,12 +999,12 @@ img, svg { display: block; max-width: 100%; }
 }
 .btn-wrong {
   background: rgba(192, 57, 43, 0.09);
-  color: #b52a1e;
+  color: var(--color-danger-dark);
   border-color: rgba(192, 57, 43, 0.18);
 }
 .btn-correct {
   background: rgba(26, 174, 57, 0.09);
-  color: #138533;
+  color: var(--color-success-dark);
   border-color: rgba(26, 174, 57, 0.18);
 }
 .btn-wrong:hover   { background: rgba(192, 57, 43, 0.16); }

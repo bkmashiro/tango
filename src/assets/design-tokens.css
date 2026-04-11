@@ -27,10 +27,13 @@
   --accent-text:     #097fe8;
 
   /* Semantic */
-  --color-success:  #1aae39;
-  --color-warning:  #dd5b00;
-  --color-danger:   #c0392b;
-  --color-teal:     #2a9d99;
+  --color-success:      #1aae39;
+  --color-success-dark: #138533;   /* darker shade for text on light bg */
+  --color-warning:      #dd5b00;
+  --color-warning-bg:   #fffbf5;   /* warm parchment tint for note callouts */
+  --color-danger:       #c0392b;
+  --color-danger-dark:  #b52a1e;   /* darker shade for text on light bg */
+  --color-teal:         #2a9d99;
 
   /* Borders */
   --border-default: rgba(0, 0, 0, 0.10);

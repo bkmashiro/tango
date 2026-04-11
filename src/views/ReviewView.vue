@@ -871,12 +871,12 @@ function handleKey(e: KeyboardEvent) {
 }
 .btn-wrong {
   background: rgba(192, 57, 43, 0.09);
-  color: #b52a1e;
+  color: var(--color-danger-dark);
   border-color: rgba(192, 57, 43, 0.18);
 }
 .btn-correct {
   background: rgba(26, 174, 57, 0.09);
-  color: #138533;
+  color: var(--color-success-dark);
   border-color: rgba(26, 174, 57, 0.18);
 }
 .btn-wrong:hover   { background: rgba(192, 57, 43, 0.17); }
@@ -894,7 +894,7 @@ function handleKey(e: KeyboardEvent) {
   border-radius: var(--radius-xs);
   transition: color var(--transition-fast);
 }
-.btn-hard:hover { color: #b52a1e; }
+.btn-hard:hover { color: var(--color-danger-dark); }
 
 /* ── Keyboard Hints ───────────────────────────────────────────────── */
 kbd {
