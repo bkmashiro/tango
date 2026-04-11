@@ -180,26 +180,31 @@ function scrollToSection(i: number) {
 </template>
 
 <style scoped>
-/* Override the read button to show toggle state */
+/* ── Read Button Toggle States ────────────────────────────────────── */
 .btn-read {
-  padding: 6px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text2);
-  font-size: 0.85rem;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-default);
+  background: var(--surface-secondary);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  font-weight: 600;
   cursor: pointer;
-  transition: all .15s;
+  transition: all var(--transition-fast);
 }
-.btn-read:hover { border-color: var(--accent); color: var(--accent); }
+.btn-read:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
 .btn-read.btn-read-active {
-  background: rgba(34,197,94,.12);
-  border-color: var(--green);
-  color: var(--green);
+  background: rgba(26, 174, 57, 0.08);
+  border-color: rgba(26, 174, 57, 0.35);
+  color: var(--color-success);
 }
 .btn-read.btn-read-active:hover {
-  background: rgba(239,68,68,.1);
-  border-color: var(--red);
-  color: var(--red);
+  background: rgba(192, 57, 43, 0.08);
+  border-color: rgba(192, 57, 43, 0.35);
+  color: var(--color-danger);
 }
 </style>
