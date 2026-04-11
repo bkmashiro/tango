@@ -385,6 +385,7 @@ img, svg { display: block; max-width: 100%; }
   margin-bottom: var(--space-11);
   padding-bottom: var(--space-9);
   border-bottom: 1px solid var(--border-subtle);
+  scroll-margin-top: var(--space-7);
 }
 .lesson-section:last-child { border-bottom: none; }
 
